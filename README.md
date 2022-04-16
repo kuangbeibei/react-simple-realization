@@ -1,1 +1,1 @@
-# react-simple-realization
+# react-simple-realization for react@17
