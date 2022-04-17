@@ -1,5 +1,6 @@
 import {REACT_ELEMENT} from "./constants";
 import {toVdom} from "./utils"
+import { Component } from "./Component";
 
 /**
  * 
@@ -30,6 +31,8 @@ const createElement = function (type, config, children) {
     }
 }
 
+
 export default {
-    createElement
+    createElement,
+    Component
 }

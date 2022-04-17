@@ -1,4 +1,4 @@
-import { REACT_TEXT } from "./constants";
+import { REACT_CLASS_COMPONENT, REACT_TEXT } from "./constants";
 
 /**
  * using vdom to generate real dom
@@ -17,7 +17,11 @@ function createDom(vdom) {
         // render number or string
         dom = document.createTextNode(props);
     } else if (typeof type === 'function') {
-        return mountFunctionComponent(vdom)
+        if (type.isReactComponent === REACT_CLASS_COMPONENT) {
+            return mountClassComponent(vdom)
+        } else {
+            return mountFunctionComponent(vdom)
+        }
     } else {
         // render html tags
         dom = document.createElement(type)
@@ -35,6 +39,13 @@ function createDom(vdom) {
     }
 
     return dom;
+}
+
+function mountClassComponent(vdom) {
+    const {type: ClassComponent, props} = vdom;
+    let componentInstance = new ClassComponent(props);
+    const renderVdom = componentInstance.render();
+    return createDom(renderVdom);
 }
 
 function mountFunctionComponent(vdom) {
