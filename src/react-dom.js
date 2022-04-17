@@ -16,6 +16,8 @@ function createDom(vdom) {
     if (type === REACT_TEXT) {
         // render number or string
         dom = document.createTextNode(props);
+    } else if (typeof type === 'function') {
+        return mountFunctionComponent(vdom)
     } else {
         // render html tags
         dom = document.createElement(type)
@@ -35,9 +37,16 @@ function createDom(vdom) {
     return dom;
 }
 
+function mountFunctionComponent(vdom) {
+    const {type, props} = vdom;
+    // execute the function component, get the return vdom
+    const returnVdom = type(props);
+    // iterate the return vdom to create real dom
+    return createDom(returnVdom)
+}
+
 function iterateRender(childrenVdom, parentDom) {
     for (let i = 0, len = childrenVdom.length; i < len; i++) {
-        console.log('hreer', childrenVdom[i]);
         render(childrenVdom[i], parentDom)
     }
 }
