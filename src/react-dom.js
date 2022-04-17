@@ -1,6 +1,7 @@
+import { REACT_TEXT } from "./constants";
 
 /**
- * 
+ * using vdom to generate real dom
  * @param {*} vdom 
  * @param {*} container 
  */
@@ -11,8 +12,58 @@ function render(vdom, container) {
 
 function createDom(vdom) {
     const {type, props} = vdom;
+    let dom;
+    if (type === REACT_TEXT) {
+        // render number or string
+        dom = document.createTextNode(props);
+    } else {
+        // render html tags
+        dom = document.createElement(type)
+    }
+
+    if (props) {
+        updateProps(dom, {}, props);
+        if (props.children) {
+            if (typeof props.children === 'object' && props.children.$$typeof) {
+                render(props.children, dom)
+            } else if (Array.isArray(props.children)) {
+                iterateRender(props.children, dom)
+            }
+        }
+    }
+
+    return dom;
 }
 
-export {
+function iterateRender(childrenVdom, parentDom) {
+    for (let i = 0, len = childrenVdom.length; i < len; i++) {
+        console.log('hreer', childrenVdom[i]);
+        render(childrenVdom[i], parentDom)
+    }
+}
+
+function updateProps(dom, oldProps={}, newProps={}) {
+    // create and update props
+    for (const key in newProps) {
+        if (key === 'children') continue;
+        if (key === 'style') {
+            let styleObj = newProps[key];
+            for (const attr in styleObj) {
+                dom.style[attr] = styleObj[attr];
+            }
+        } else {
+            dom[key] = newProps[key]
+        }
+    }
+
+    // props in oldProps but not in newProps, delete them
+    for (let key in oldProps) {
+        if (!newProps.hasOwnProperty(key)) {
+            delete dom[key]
+        }
+    }
+}
+
+export default {
     render
 }

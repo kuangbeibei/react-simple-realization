@@ -3,9 +3,9 @@ import {toVdom} from "./utils"
 
 /**
  * 
- * @param {*} type whether it is simple react element, or function component or class component
+ * @param {*} type simple react element, or function component or class component
  * @param {*} config including style, className, custom prop, etc.
- * @param {*} children at the end of arguments, there will be no child, one child, or multiple children
+ * @param {*} children added at the end of arguments, could be none, one child or multiple children
  * @returns 
  */
 const createElement = function (type, config, children) {
@@ -28,10 +28,6 @@ const createElement = function (type, config, children) {
         type,
         props
     }
-}
-
-function updateProps(config) {
-
 }
 
 export default {
