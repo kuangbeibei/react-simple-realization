@@ -29,24 +29,25 @@ class A extends React.Component {
             count: 0
         }
     }
-    handleClick = () => {
+    handleClick = (e) => {
+        e.stopPropagation();
         console.log('handleClick');
-        this.setState({
-            count: this.state.count + 1
-        });
-        this.setState({
-            count: this.state.count + 1
-        });
+        // this.setState({
+        //     count: this.state.count + 1
+        // });
+        // this.setState({
+        //     count: this.state.count + 1
+        // });
 
-        // this.setState({
-        //     count: 1
-        // });
-        // this.setState({
-        //     count: 1
-        // });
-        // this.setState({
-        //     count: 2
-        // });
+        this.setState({
+            count: 1
+        });
+        this.setState({
+            count: 1
+        });
+        this.setState({
+            count: 2
+        });
     }
     handleDivClick = () => {
         console.log('handleDivClick');
