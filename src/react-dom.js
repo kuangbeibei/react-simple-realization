@@ -1,5 +1,5 @@
-import { updateQueue } from "./Component";
 import { REACT_CLASS_COMPONENT, REACT_TEXT } from "./constants";
+import { addEvent } from "./event";
 
 /**
  * using vdom to generate real dom
@@ -79,13 +79,8 @@ function updateProps(dom, oldProps={}, newProps={}) {
                 dom.style[attr] = styleObj[attr];
             }
         } else if (/^on[A-Z]*/.test(key)) {
-            let eventName = key.toLocaleLowerCase();
-            let store = dom.__store__ ||( dom.__store__ = {});
-            store[eventName] = newProps[key];
-            if (!document[eventName]) {
-                // AOP
-                document[eventName] = dispatchEvent; 
-            }
+            let eventType = key.toLocaleLowerCase();
+            addEvent(dom, eventType, newProps[key]);
         } else {
             dom[key] = newProps[key]
         }
@@ -118,16 +113,7 @@ export function compareTwoVdom(oldDom, newVdom) {
     parentDom.replaceChild(newDom, oldDom)
 }
 
-function dispatchEvent(event) {
-    updateQueue.isBatchingUpdate = true;
-    const {target} = event;
-    let syntheticEvent = {};
-    for (const [key, value] in Object.entries(event)) {
-        syntheticEvent[key] = value;
-    }
-    target.__store__['onclick'](syntheticEvent);
-    updateQueue.batchUpdate();
-}
+
 
 export default {
     render
