@@ -24,10 +24,23 @@ import ReactDOM from "./react-dom";
  */
 class A extends React.Component {
     constructor (props) {
-        super(props)
+        super(props);
+        this.state = {
+            count: 0
+        }
+    }
+    handleClick = () => {
+        this.setState({
+            count: this.state.count + 1
+        })
+        console.log('click');
     }
     render() {
-        return <h1 className="hi" style={{color: 'indianred'}}>{this.props.msg} | <span>world</span> Class Component </h1>
+        console.log('render', this.state);
+        return <div>
+             <h1 className="hi" style={{color: 'indianred'}}>{this.props.msg} | <span>{this.state.count}</span></h1>
+             <button onClick={this.handleClick}>click</button>
+        </div>
     }
 }
 

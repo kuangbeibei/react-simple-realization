@@ -5,12 +5,12 @@ import { REACT_CLASS_COMPONENT, REACT_TEXT } from "./constants";
  * @param {*} vdom 
  * @param {*} container 
  */
-function render(vdom, container) {
+export function render(vdom, container) {
     let actualDom = createDom(vdom);
     container.appendChild(actualDom)
 }
 
-function createDom(vdom) {
+export function createDom(vdom) {
     const {type, props} = vdom;
     let dom;
     if (type === REACT_TEXT) {
@@ -38,6 +38,8 @@ function createDom(vdom) {
         }
     }
 
+    vdom.dom = dom;
+
     return dom;
 }
 
@@ -45,6 +47,7 @@ function mountClassComponent(vdom) {
     const {type: ClassComponent, props} = vdom;
     let componentInstance = new ClassComponent(props);
     const renderVdom = componentInstance.render();
+    componentInstance.olderRenderVdom = vdom.olderRenderVdom = renderVdom;
     return createDom(renderVdom);
 }
 
@@ -71,6 +74,9 @@ function updateProps(dom, oldProps={}, newProps={}) {
             for (const attr in styleObj) {
                 dom.style[attr] = styleObj[attr];
             }
+        } else if (/^on[A-Z]*/.test(key)) {
+            let eventName = key.toLocaleLowerCase();
+            dom[eventName] = newProps[key];
         } else {
             dom[key] = newProps[key]
         }
@@ -81,6 +87,13 @@ function updateProps(dom, oldProps={}, newProps={}) {
         if (!newProps.hasOwnProperty(key)) {
             delete dom[key]
         }
+    }
+}
+
+export function findDom(vdom) {
+    if (vdom.dom) return vdom.dom;
+    if (vdom.olderRenderVdom) {
+        return findDom(vdom.olderRenderVdom)
     }
 }
 
