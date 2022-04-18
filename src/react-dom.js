@@ -1,3 +1,4 @@
+import { updateQueue } from "./Component";
 import { REACT_CLASS_COMPONENT, REACT_TEXT } from "./constants";
 
 /**
@@ -79,7 +80,12 @@ function updateProps(dom, oldProps={}, newProps={}) {
             }
         } else if (/^on[A-Z]*/.test(key)) {
             let eventName = key.toLocaleLowerCase();
-            dom[eventName] = newProps[key];
+            let store = dom.__store__ ||( dom.__store__ = {});
+            store[eventName] = newProps[key];
+            if (!document[eventName]) {
+                // AOP
+                document[eventName] = dispatchEvent; 
+            }
         } else {
             dom[key] = newProps[key]
         }
@@ -110,6 +116,17 @@ export function compareTwoVdom(oldDom, newVdom) {
     const newDom = createDom(newVdom);
     const parentDom = oldDom.parentNode;
     parentDom.replaceChild(newDom, oldDom)
+}
+
+function dispatchEvent(event) {
+    updateQueue.isBatchingUpdate = true;
+    const {target} = event;
+    let syntheticEvent = {};
+    for (const [key, value] in Object.entries(event)) {
+        syntheticEvent[key] = value;
+    }
+    target.__store__['onclick'](syntheticEvent);
+    updateQueue.batchUpdate();
 }
 
 export default {

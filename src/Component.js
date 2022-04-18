@@ -1,6 +1,16 @@
 import {REACT_CLASS_COMPONENT} from "./constants";
 import { findDom, compareTwoVdom } from "./react-dom";
 
+export const updateQueue = {
+    isBatchingUpdate: false,
+    updaters: new Set(),
+    batchUpdate: () => {
+        updateQueue.isBatchingUpdate = false;
+        updateQueue.updaters.forEach(updater => updater.updateComponent());
+        updateQueue.updaters.clear();
+    }
+}
+
 class Updater {
     constructor(componentInstance) {
         this.componentInstance = componentInstance;
@@ -11,7 +21,12 @@ class Updater {
         this.emitUpdate()
     }
     emitUpdate() {
-        this.updateComponent();
+        if (updateQueue.isBatchingUpdate) {
+            this.updateQueque = updateQueue.updaters.add(this);
+        } else {
+            this.updateComponent();
+        }
+        
     }
     updateComponent() {
         const {pendingStates, componentInstance} = this;
@@ -19,6 +34,7 @@ class Updater {
             let newState = this.getState();
             shouldUpdateComponent(componentInstance, newState)
         }
+        
     }
     getState() {
         const {componentInstance, pendingStates} = this;

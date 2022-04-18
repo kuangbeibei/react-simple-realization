@@ -32,8 +32,20 @@ class A extends React.Component {
     handleClick = () => {
         this.setState({
             count: this.state.count + 1
-        })
-        console.log('click');
+        });
+        this.setState({
+            count: this.state.count + 1
+        });
+
+        // this.setState({
+        //     count: 1
+        // });
+        // this.setState({
+        //     count: 1
+        // });
+        // this.setState({
+        //     count: 2
+        // });
     }
     render() {
         console.log('render', this.state);
