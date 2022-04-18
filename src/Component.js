@@ -1,5 +1,5 @@
 import {REACT_CLASS_COMPONENT} from "./constants";
-import ReactDOM, { findDom } from "./react-dom";
+import { findDom, compareTwoVdom } from "./react-dom";
 
 class Updater {
     constructor(componentInstance) {
@@ -11,29 +11,32 @@ class Updater {
         this.emitUpdate()
     }
     emitUpdate() {
-        if(this.pendingStates.length) {
+        this.updateComponent();
+    }
+    updateComponent() {
+        const {pendingStates, componentInstance} = this;
+        if(pendingStates.length) {
             let newState = this.getState();
-            shouldUpdateComponent(this.componentInstance)
+            shouldUpdateComponent(componentInstance, newState)
         }
     }
     getState() {
-        let oldState = this.componentInstance.state;
-        this.pendingStates.forEach(newState => {
-            this.componentInstance.state = {
-                ...oldState,
-                ...newState
+        const {componentInstance, pendingStates} = this;
+        let {state} = componentInstance;
+        pendingStates.forEach(nextState => {
+            state = {
+                ...state,
+                ...nextState
             } 
         })
-        this.pendingStates.length = 0;
-        return this.componentInstance.state
+        pendingStates.length = 0;
+        return state
     }
 }
 
-function shouldUpdateComponent(componentInstance) {
-    const oldVdom = componentInstance.olderRenderVdom;
-    const newVdom = componentInstance.render();
-    const dom = findDom(oldVdom);
-    ReactDOM.render(newVdom, dom.parentNode)
+function shouldUpdateComponent(componentInstance, newState) {
+    componentInstance.state = newState;
+    componentInstance.forceUpdate();
 }
 
 export class Component {
@@ -44,5 +47,14 @@ export class Component {
     }
     setState(partialState) {
         this.updater.addState(partialState)
+    }
+    forceUpdate() {
+        const oldRenderVdom = this.olderRenderVdom;
+        const oldDom = findDom(oldRenderVdom);
+        const newRenderVdom = this.render();
+        // The code below is very very important! Because we upate state in browser, there is no type of class component, it is all about vdom. 
+        // So, we have to manually connect vdom and dom, manually handle their relationship, or there will be misterious bugs.
+        this.olderRenderVdom = newRenderVdom.oldRenderVdom = newRenderVdom;
+        compareTwoVdom(oldDom, newRenderVdom);
     }
 }

@@ -6,8 +6,8 @@ import { REACT_CLASS_COMPONENT, REACT_TEXT } from "./constants";
  * @param {*} container 
  */
 export function render(vdom, container) {
-    let actualDom = createDom(vdom);
-    container.appendChild(actualDom)
+    let realDom = createDom(vdom);
+    container.appendChild(realDom)
 }
 
 export function createDom(vdom) {
@@ -47,6 +47,8 @@ function mountClassComponent(vdom) {
     const {type: ClassComponent, props} = vdom;
     let componentInstance = new ClassComponent(props);
     const renderVdom = componentInstance.render();
+    // componentInstance.olderRenderVdom -> for later use to dom diff
+    // vdom -> for later use to find the real dom
     componentInstance.olderRenderVdom = vdom.olderRenderVdom = renderVdom;
     return createDom(renderVdom);
 }
@@ -55,6 +57,7 @@ function mountFunctionComponent(vdom) {
     const {type, props} = vdom;
     // execute the function component, get the return vdom
     const returnVdom = type(props);
+    vdom.olderRenderVdom = returnVdom;
     // iterate the return vdom to create real dom
     return createDom(returnVdom)
 }
@@ -90,11 +93,23 @@ function updateProps(dom, oldProps={}, newProps={}) {
     }
 }
 
+/**
+ * using vdom to find real dom
+ * @param {*} vdom 
+ * @returns 
+ */
 export function findDom(vdom) {
+    if (!vdom) return null;
     if (vdom.dom) return vdom.dom;
     if (vdom.olderRenderVdom) {
         return findDom(vdom.olderRenderVdom)
     }
+}
+
+export function compareTwoVdom(oldDom, newVdom) {
+    const newDom = createDom(newVdom);
+    const parentDom = oldDom.parentNode;
+    parentDom.replaceChild(newDom, oldDom)
 }
 
 export default {
