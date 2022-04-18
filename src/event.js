@@ -18,15 +18,19 @@ function dispatchEvent(event) {
 
     const {target, type} = event;
     const eventType = `on${type}`;
-    const {__store__: store} = target;
-    const handler = store[eventType];
 
     let syntheticEvent = {};
     for (const [key, value] in Object.entries(event)) {
         syntheticEvent[key] = value;
     }
 
-    handler && handler.call(target, syntheticEvent);
+    let currentTarget = target; 
+    while (currentTarget.parentNode) {
+        const {__store__: store} = currentTarget;
+        const handler = store && store[eventType];
+        handler && handler.call(currentTarget, syntheticEvent);
+        currentTarget = currentTarget.parentNode;
+    }
 
     updateQueue.batchUpdate();
 }

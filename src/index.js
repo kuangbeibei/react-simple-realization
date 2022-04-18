@@ -30,6 +30,7 @@ class A extends React.Component {
         }
     }
     handleClick = () => {
+        console.log('handleClick');
         this.setState({
             count: this.state.count + 1
         });
@@ -47,9 +48,12 @@ class A extends React.Component {
         //     count: 2
         // });
     }
+    handleDivClick = () => {
+        console.log('handleDivClick');
+    }
     render() {
         console.log('render', this.state);
-        return <div>
+        return <div onClick={this.handleDivClick}>
              <h1 className="hi" style={{color: 'indianred'}}>{this.props.msg} | <span>{this.state.count}</span></h1>
              <button onClick={this.handleClick}>click</button>
         </div>
