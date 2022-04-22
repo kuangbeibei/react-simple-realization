@@ -49,8 +49,11 @@ export function createDom(vdom) {
 }
 
 function mountClassComponent(vdom) {
-    const {type: ClassComponent, props} = vdom;
+    const {type: ClassComponent, props, ref} = vdom;
     let componentInstance = new ClassComponent(props);
+
+    if (ref) ref.current = componentInstance; // assign ref.current to class component instance
+
     const renderVdom = componentInstance.render();
     // componentInstance.olderRenderVdom -> for later use to dom diff
     // vdom -> for later use to find the real dom
