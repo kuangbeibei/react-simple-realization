@@ -33,14 +33,14 @@ import ReactDOM from "./react-dom";
 //     }
 //     handleClick = (e) => {
 //         e.stopPropagation();
-//         this.setState({
-//             count: this.state.count + 1
-//         });
-//         console.log(111, this.state.count); // 0
-//         this.setState({
-//             count: this.state.count + 1
-//         });
-//         console.log(222, this.state.count); // 0
+//         // this.setState({
+//         //     count: this.state.count + 1
+//         // });
+//         // console.log(111, this.state.count); // 0
+//         // this.setState({
+//         //     count: this.state.count + 1
+//         // });
+//         // console.log(222, this.state.count); // 0
 
 //         // this.setState({
 //         //     count: 1
@@ -51,17 +51,23 @@ import ReactDOM from "./react-dom";
 //         // this.setState({
 //         //     count: 2
 //         // });
-//         setTimeout(() => {
-//             console.log(333, this.state.count); // 1
-//             this.setState({
-//                 count: this.state.count + 1
-//             });
-//             console.log(444, this.state.count); // 2
-//             this.setState({
-//                 count: this.state.count + 1
-//             });
-//             console.log(555, this.state.count); // 3
-//         }, 1000)
+//         // setTimeout(() => {
+//         //     console.log(333, this.state.count); // 1
+//         //     this.setState({
+//         //         count: this.state.count + 1
+//         //     });
+//         //     console.log(444, this.state.count); // 2
+//         //     this.setState({
+//         //         count: this.state.count + 1
+//         //     });
+//         //     console.log(555, this.state.count); // 3
+//         // }, 1000)
+
+//         this.setState((state) => ({
+//             count: state.count + 1 
+//         }), () => {
+//             console.log('call in callback', this.state.count);
+//         })
 //     }
 //     handleDivClick = () => {
 //         console.log('handleDivClick');
@@ -80,14 +86,27 @@ import ReactDOM from "./react-dom";
 /**
  * realize React.createRef()
  */
+
+class SubComp extends React.Component {
+    constructor(props) {
+        super(props)
+    }
+    render() {
+        return <div>i am sub component</div>
+    }
+}
+let sub;
 class App extends React.Component {
     constructor(props) {
         super(props);
         this.refA = React.createRef();
         this.refB = React.createRef();
-        this.result = React.createRef()
+        this.result = React.createRef();
+        this.sub = React.createRef();
+        sub = this.sub;
     }
     handleClick = () => {
+        console.log('to check if sub equals this.sub: ', sub === this.sub);
         const inputA = this.refA.current.value;
         const inputB = this.refB.current.value;
         const resultAB = `${inputA}`+`${inputB}`;
@@ -95,7 +114,8 @@ class App extends React.Component {
     }
     render() {
         return <div>
-            <input ref={this.refA} /> 
+            <SubComp ref={this.sub}/>
+            <input ref={this.refA} />
             + 
             <input ref={this.refB}/> 
             <button onClick={this.handleClick}>

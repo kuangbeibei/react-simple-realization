@@ -15,9 +15,11 @@ class Updater {
     constructor(componentInstance) {
         this.componentInstance = componentInstance;
         this.pendingStates = [];
+        this.callbacks = [];
     }
-    addState(partialState) {
+    addState(partialState, callback) {
         this.pendingStates.push(partialState);
+        if (callback) this.callbacks.push(callback);
         this.emitUpdate()
     }
     emitUpdate() {
@@ -30,10 +32,16 @@ class Updater {
         // queueMicrotask(updateQueue.batchUpdate) // another way to setState, always batch update
     }
     updateComponent() {
-        const {pendingStates, componentInstance} = this;
+        const {pendingStates, componentInstance, callbacks} = this;
         if(pendingStates.length) {
             let newState = this.getState();
-            shouldUpdateComponent(componentInstance, newState)
+            shouldUpdateComponent(componentInstance, newState);
+            queueMicrotask(() => {
+                if (callbacks.length) {
+                    callbacks.forEach(cb => cb.call(this))
+                };
+                this.callbacks.length = 0;
+            })
         }
         
     }
@@ -41,6 +49,9 @@ class Updater {
         const {componentInstance, pendingStates} = this;
         let {state} = componentInstance;
         pendingStates.forEach(nextState => {
+            if (typeof nextState === 'function') {
+                nextState = nextState(state)
+            } 
             state = {
                 ...state,
                 ...nextState
@@ -62,8 +73,8 @@ export class Component {
         this.props = props;
         this.updater = new Updater(this);
     }
-    setState(partialState) {
-        this.updater.addState(partialState)
+    setState(partialState, callback) {
+        this.updater.addState(partialState, callback);
     }
     forceUpdate() {
         console.log('forceupdate');
