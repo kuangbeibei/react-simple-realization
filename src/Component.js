@@ -21,12 +21,12 @@ class Updater {
         this.emitUpdate()
     }
     emitUpdate() {
-        if (updateQueue.isBatchingUpdate) {
-            this.updateQueque = updateQueue.updaters.add(this);
-        } else {
-            this.updateComponent();
-        }
-        
+        // if (updateQueue.isBatchingUpdate) {
+            updateQueue.updaters.add(this);
+        // } else {
+        //     this.updateComponent();
+        // }
+        queueMicrotask(updateQueue.batchUpdate) // always update in batch
     }
     updateComponent() {
         const {pendingStates, componentInstance} = this;
@@ -65,6 +65,7 @@ export class Component {
         this.updater.addState(partialState)
     }
     forceUpdate() {
+        console.log('forceupdate');
         const oldRenderVdom = this.olderRenderVdom;
         const oldDom = findDom(oldRenderVdom);
         const newRenderVdom = this.render();

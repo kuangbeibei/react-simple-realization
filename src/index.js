@@ -59,7 +59,7 @@ class A extends React.Component {
                 count: this.state.count + 1
             });
             console.log(555, this.state.count); // 3
-        }, 0)
+        }, 1000)
     }
     handleDivClick = () => {
         console.log('handleDivClick');
