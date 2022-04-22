@@ -114,7 +114,6 @@ export function compareTwoVdom(oldDom, newVdom) {
 }
 
 
-
 export default {
     render
 }
