@@ -21,12 +21,13 @@ class Updater {
         this.emitUpdate()
     }
     emitUpdate() {
-        // if (updateQueue.isBatchingUpdate) {
+        if (updateQueue.isBatchingUpdate) {
             updateQueue.updaters.add(this);
-        // } else {
-        //     this.updateComponent();
-        // }
-        queueMicrotask(updateQueue.batchUpdate) // always update in batch
+        } else {
+            this.updateComponent();
+        }
+        // ^18.0.0
+        // queueMicrotask(updateQueue.batchUpdate) // another way to setState, always batch update
     }
     updateComponent() {
         const {pendingStates, componentInstance} = this;

@@ -14,7 +14,7 @@ export function addEvent(dom, eventType, eventHandler) {
  * @param {*} event 
  */
 function dispatchEvent(event) {
-    // updateQueue.isBatchingUpdate = true;
+    updateQueue.isBatchingUpdate = true;
 
     const {target, type} = event;
     const eventType = `on${type}`;
@@ -34,7 +34,7 @@ function dispatchEvent(event) {
         currentTarget = currentTarget.parentNode;
     }
 
-    // updateQueue.batchUpdate();
+    updateQueue.batchUpdate();
 }
 
 function createSyntheticEvent(nativeEvent) {
