@@ -12,7 +12,7 @@ export function render(vdom, container) {
 }
 
 export function createDom(vdom) {
-    const {type, props} = vdom;
+    const {type, props, ref, key} = vdom;
     let dom;
     if (type === REACT_TEXT) {
         // render number or string
@@ -40,6 +40,10 @@ export function createDom(vdom) {
     }
 
     vdom.dom = dom;
+
+    if (ref) {
+        ref.current = dom;
+    }
 
     return dom;
 }

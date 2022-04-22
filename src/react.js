@@ -10,13 +10,18 @@ import { Component } from "./Component";
  * @returns 
  */
 const createElement = function (type, config, children) {
-    let key, ref,  props = {};
+    let key, ref, props = {};
 
-    for (const [key, value] of Object.entries(config)) {
-        if ( key !== '__self' && key !== '__source') {
-            props[key] = value
-        }
+    if (config.ref) {
+        ref = config.ref;
+        key = config.key;
+        delete config.ref;
+        delete config.key; // used for dom-diff
+        delete config.__self;
+        delete config.__source;
     }
+
+    props = {...config}
 
     if (arguments.length > 3) {
         props.children = Array.prototype.slice.call(arguments, 2).map(toVdom); // arguments is array-like data, and cannot use built-in functions in array.
@@ -27,12 +32,21 @@ const createElement = function (type, config, children) {
     return {
         $$typeof: REACT_ELEMENT,
         type,
-        props
+        props,
+        ref, 
+        key
+    }
+}
+
+function createRef() {
+    return {
+        current: null
     }
 }
 
 
 export default {
     createElement,
-    Component
+    Component,
+    createRef
 }
