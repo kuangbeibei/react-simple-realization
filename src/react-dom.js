@@ -1,4 +1,4 @@
-import { REACT_CLASS_COMPONENT, REACT_TEXT } from "./constants";
+import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT } from "./constants";
 import { addEvent } from "./event";
 
 /**
@@ -13,6 +13,7 @@ export function render(vdom, container) {
 
 export function createDom(vdom) {
     const {type, props, ref, key} = vdom;
+
     let dom;
     if (type === REACT_TEXT) {
         // render number or string
@@ -23,6 +24,8 @@ export function createDom(vdom) {
         } else {
             return mountFunctionComponent(vdom)
         }
+    } else if (type && type.$$typeof === REACT_FORWARDREF) {
+        return mountForwardRefComponnet(vdom);
     } else {
         // render html tags
         dom = document.createElement(type)
@@ -46,6 +49,13 @@ export function createDom(vdom) {
     }
 
     return dom;
+}
+
+function mountForwardRefComponnet(vdom) {
+    const {type, props, ref} = vdom;
+    let renderVdom = type.render(props, ref);
+    vdom.oldRenderVdom = renderVdom;
+    return createDom(renderVdom);
 }
 
 function mountClassComponent(vdom) {

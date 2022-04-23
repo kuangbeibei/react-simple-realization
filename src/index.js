@@ -91,11 +91,23 @@ class SubComp extends React.Component {
     constructor(props) {
         super(props)
     }
+    SubCompMethod = () => {
+        console.log('i am sub com method');
+    }
     render() {
         return <div>i am sub component</div>
     }
 }
+function SubComp2(props, ref) {
+    console.log('props~~~', props, 'ref~~~', ref);
+    return <div>i am sub component 2</div>
+};
+
+const ForwardSubComp2 = React.forwardRef(SubComp2);
+
 let sub;
+let sub2;
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -103,18 +115,23 @@ class App extends React.Component {
         this.refB = React.createRef();
         this.result = React.createRef();
         this.sub = React.createRef();
+        this.sub2 = React.createRef();
         sub = this.sub;
+        sub2 = this.sub2;
     }
     handleClick = () => {
         console.log('to check if sub equals this.sub: ', sub === this.sub);
+        // console.log('find method', this.sub.current.SubCompMethod);
         const inputA = this.refA.current.value;
         const inputB = this.refB.current.value;
         const resultAB = `${inputA}`+`${inputB}`;
         this.result.current.value = resultAB;
+        
     }
     render() {
         return <div>
             <SubComp ref={this.sub}/>
+            <ForwardSubComp2 ref={this.sub2}/>
             <input ref={this.refA} />
             + 
             <input ref={this.refB}/> 

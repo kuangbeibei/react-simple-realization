@@ -1,4 +1,4 @@
-import {REACT_ELEMENT} from "./constants";
+import {REACT_ELEMENT, REACT_FORWARDREF} from "./constants";
 import {toVdom} from "./utils"
 import { Component } from "./Component";
 
@@ -44,9 +44,16 @@ function createRef() {
     }
 }
 
+function forwardRef(functionComponent) {
+    return {
+        $$typeof: REACT_FORWARDREF,
+        render: functionComponent
+    }
+}
 
 export default {
     createElement,
     Component,
-    createRef
+    createRef,
+    forwardRef
 }
