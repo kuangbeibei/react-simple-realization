@@ -63,8 +63,28 @@ class Updater {
 }
 
 function shouldUpdateComponent(componentInstance, newState) {
+    let willUpdate = true;
+
+    if (componentInstance.shouldComponentUpdate 
+        && 
+        // now 'componentInstance.props' is the old props, after 'dom-diff', this part will be improved.
+        !componentInstance.shouldComponentUpdate(componentInstance.props, newState)
+    ) {
+        willUpdate = false
+    }
+
+    if (componentInstance.UNSAFE_componentWillUpdate) {
+        componentInstance.UNSAFE_componentWillUpdate()
+    }
+
     componentInstance.state = newState;
-    componentInstance.forceUpdate();
+    
+    if (willUpdate) {
+        componentInstance.forceUpdate();
+        if (componentInstance.componentDidUpdate) {
+            componentInstance.componentDidUpdate(componentInstance.props, newState)
+        }
+    }
 }
 
 export class Component {
@@ -77,7 +97,6 @@ export class Component {
         this.updater.addState(partialState, callback);
     }
     forceUpdate() {
-        console.log('forceupdate');
         const oldRenderVdom = this.olderRenderVdom;
         const oldDom = findDom(oldRenderVdom);
         const newRenderVdom = this.render();

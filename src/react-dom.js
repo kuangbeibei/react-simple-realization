@@ -8,7 +8,10 @@ import { addEvent } from "./event";
  */
 export function render(vdom, container) {
     let realDom = createDom(vdom);
-    container.appendChild(realDom)
+    container.appendChild(realDom);
+    if (realDom.componentDidMount) {
+        realDom.componentDidMount()
+    }
 }
 
 export function createDom(vdom) {
@@ -31,7 +34,7 @@ export function createDom(vdom) {
         dom = document.createElement(type)
     }
 
-    if (props) {
+    if (typeof props === 'object') {
         updateProps(dom, {}, props);
         if (props.children) {
             if (typeof props.children === 'object' && props.children.$$typeof) {
@@ -64,11 +67,22 @@ function mountClassComponent(vdom) {
 
     if (ref) ref.current = componentInstance; // assign ref.current to class component instance
 
+    // lifecycle - UNSAFE_componentWillMount
+    if (componentInstance.UNSAFE_componentWillMount) {
+        componentInstance.UNSAFE_componentWillMount()
+    }
     const renderVdom = componentInstance.render();
     // componentInstance.olderRenderVdom -> for later use to dom diff
     // vdom -> for later use to find the real dom
     componentInstance.olderRenderVdom = vdom.olderRenderVdom = renderVdom;
-    return createDom(renderVdom);
+
+    let dom = createDom(renderVdom);
+
+    if (componentInstance.componentDidMount) {
+        dom.componentDidMount = componentInstance.componentDidMount.bind(componentInstance);
+    }
+
+    return dom;
 }
 
 function mountFunctionComponent(vdom) {
