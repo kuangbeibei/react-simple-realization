@@ -149,34 +149,34 @@ import ReactDOM from "./react-dom";
  * realize lifecycle 1
  */
 
-// class Child extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         console.log('Child Constructor');
-//     }
-//     UNSAFE_componentWillMount() {
-//         console.log('Child will mount');
-//     }
-//     componentDidMount() {
-//         console.log('child did mount');
-//     }
-//     UNSAFE_componentWillUpdate() {
-//         console.log('child will update');
-//     }
-//     shouldComponentUpdate() {
-//         console.log('child should update?');
-//         return true
-//     }
-//     componentDidUpdate() {
-//         console.log('child did update');
-//     }
-//     // componentWillUnMount() {
-//     //     console.log('child will unmount');
-//     // }
-//     render() {
-//         return <div>{this.props.count + 1}</div>
-//     }
-// }
+class Child extends React.Component {
+    constructor(props) {
+        super(props);
+        console.log('Child Constructor');
+    }
+    UNSAFE_componentWillMount() {
+        console.log('Child will mount');
+    }
+    componentDidMount() {
+        console.log('child did mount');
+    }
+    UNSAFE_componentWillUpdate() {
+        console.log('child will update');
+    }
+    shouldComponentUpdate() {
+        console.log('child should update?');
+        return true
+    }
+    componentDidUpdate() {
+        console.log('child did update');
+    }
+    componentWillUnMount() {
+        console.log('child will unmount');
+    }
+    render() {
+        return <div>{this.props.count + 1}</div>
+    }
+}
 
 class Parent extends React.Component {
     constructor(props) {
@@ -215,7 +215,7 @@ class Parent extends React.Component {
         return <div>
             <div>{this.state.count}</div>
             <button onClick={this.handleClick}>+</button>
-            {/* <Child count={this.state.count} /> */}
+            <Child count={this.state.count} />
         </div>
     }
 }
