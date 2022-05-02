@@ -157,7 +157,6 @@ export function compareTwoVdom(parentDom, oldVdom, newVdom) {
     }
     if (oldVdom && newVdom) {
         if (oldVdom.type !== newVdom.type) {
-            console.log('type不相同')
             unMountVdom(oldVdom);
             let newDom = createDom(newVdom);
             // there is an obvious bug here, fix it later
@@ -167,7 +166,6 @@ export function compareTwoVdom(parentDom, oldVdom, newVdom) {
             }
             return
         } else if (oldVdom.type === newVdom.type) {
-            console.log('type相同走这里');
             // dom-diff situation
             updateElement(oldVdom, newVdom)
         }
@@ -276,7 +274,7 @@ function updateChildren(parentDom, oldVChildren, newVChildren) {
 function updateClassComponent(oldVdom, newVdom) {
     const componentInstance = newVdom.componentInstance = oldVdom.componentInstance;
     if (componentInstance.UNSAFE_componentWillReceiveProps) {
-        componentInstance.UNSAFE_componentWillReceiveProps()
+        componentInstance.UNSAFE_componentWillReceiveProps(newVdom.props)
     }
     componentInstance.updater.emitUpdate(newVdom.props)
 }
