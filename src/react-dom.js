@@ -1,4 +1,4 @@
-import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT, MOVE, PLACEMENT } from "./constants";
+import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT, MOVE, PLACEMENT, REACT_FRAGMENT } from "./constants";
 import { addEvent } from "./event";
 
 /**
@@ -21,6 +21,8 @@ export function createDom(vdom) {
     if (type === REACT_TEXT) {
         // render number or string
         dom = document.createTextNode(props);
+    } else if (type === REACT_FRAGMENT) {
+        dom = document.createDocumentFragment();
     } else if (typeof type === 'function') {
         if (type.isReactComponent === REACT_CLASS_COMPONENT) {
             return mountClassComponent(vdom)
@@ -38,6 +40,7 @@ export function createDom(vdom) {
         updateProps(dom, {}, props);
         if (props.children) {
             if (typeof props.children === 'object' && props.children.$$typeof) {
+                props.children.mountIndex = 0;
                 render(props.children, dom)
             } else if (Array.isArray(props.children)) {
                 iterateRender(props.children, dom)
@@ -181,6 +184,9 @@ function updateElement(oldVdom, newVdom) {
         if (oldVdom.props !== newVdom.props) {
             currentDom.textContent = newVdom.props;
         }
+    } else if (type === REACT_FRAGMENT) {
+        const currentDom = newVdom.dom = findDom(oldVdom);
+        updateChildren(currentDom, oldVdom.props.children, newVdom.props.children)
     } else if (typeof type === 'string') {
         let currentDom = newVdom.dom = findDom(oldVdom);
         updateProps(currentDom, oldVdom.props, newVdom.props);
@@ -307,7 +313,7 @@ function updateFunctionComponent(oldVdom, newVdom) {
 function unMountVdom(oldVdom) {
     const {componentInstance, props, ref} = oldVdom;
     const currentDom = findDom(oldVdom);
-    if (componentInstance.componentWillUnMount) {
+    if (componentInstance && componentInstance.componentWillUnMount) {
         componentInstance.componentWillUnMount()
     }
     if (ref) ref.current = null;

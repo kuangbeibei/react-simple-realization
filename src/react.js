@@ -1,4 +1,4 @@
-import {REACT_ELEMENT, REACT_FORWARDREF} from "./constants";
+import {REACT_ELEMENT, REACT_FORWARDREF, REACT_FRAGMENT} from "./constants";
 import {toVdom} from "./utils"
 import { Component } from "./Component";
 
@@ -55,5 +55,6 @@ export default {
     createElement,
     Component,
     createRef,
-    forwardRef
+    forwardRef,
+    Fragment: REACT_FRAGMENT
 }

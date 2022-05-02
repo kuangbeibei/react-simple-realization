@@ -146,83 +146,109 @@ import ReactDOM from "./react-dom";
 // ReactDOM.render(<App />, document.getElementById('root'))
 
 /**
- * realize lifecycle 1
+ * realize lifecycle between father and son
  */
 
-class Child extends React.Component {
-    constructor(props) {
-        super(props);
-        console.log('Child Constructor');
-    }
-    UNSAFE_componentWillMount() {
-        console.log('Child will mount');
-    }
-    componentDidMount() {
-        console.log('child did mount');
-    }
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        console.log('UNSAFE_componentWillReceiveProps: ', nextProps);
-    }
-    UNSAFE_componentWillUpdate() {
-        console.log('child will update');
-    }
-    shouldComponentUpdate() {
-        console.log('child should update?');
-        return true
-    }
-    componentDidUpdate() {
-        console.log('child did update');
-    }
-    componentWillUnMount() {
-        console.log('child will unmount');
-    }
-    render() {
-        return <div>{this.props.count + 1}</div>
-    }
-}
+// class Child extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         console.log('Child Constructor');
+//     }
+//     UNSAFE_componentWillMount() {
+//         console.log('Child will mount');
+//     }
+//     componentDidMount() {
+//         console.log('child did mount');
+//     }
+//     UNSAFE_componentWillReceiveProps(nextProps) {
+//         console.log('UNSAFE_componentWillReceiveProps: ', nextProps);
+//     }
+//     UNSAFE_componentWillUpdate() {
+//         console.log('child will update');
+//     }
+//     shouldComponentUpdate() {
+//         console.log('child should update?');
+//         return true
+//     }
+//     componentDidUpdate() {
+//         console.log('child did update');
+//     }
+//     componentWillUnMount() {
+//         console.log('child will unmount');
+//     }
+//     render() {
+//         return <div>{this.props.count + 1}</div>
+//     }
+// }
 
-class Parent extends React.Component {
+// class Parent extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         console.log('parent constructor');
+//         this.state = {
+//             count: 0
+//         }
+//     }
+//     UNSAFE_componentWillMount() {
+//         console.log('parent will mount');
+//     }
+//     componentDidMount() {
+//         console.log('parent did mount');
+//     }
+//     shouldComponentUpdate(nextProps, nextState) {
+//         console.log('parent should update?');
+//         return nextState.count % 2 == 0
+//     }
+//     UNSAFE_componentWillUpdate() {
+//         console.log('parent will update', this.state.count);
+//     }
+//     componentDidUpdate(newProps, newState) {
+//         console.log('parent did update', this.state.count);
+//         console.log('_________________');
+//     }
+//     handleClick = () => {
+//         this.setState(state => ({
+//             count: state.count + 1
+//         }), () => {
+//             // after componentDidMount
+//             console.log('state: ', this.state.count);
+//         })
+//     }
+//     render() {
+//         return <div>
+//             <div>{this.state.count}</div>
+//             <button onClick={this.handleClick}>+</button>
+//             {
+//                 this.state.count === 2 ? <Child count={this.state.count} /> : null
+//             }
+//         </div>
+//     }
+// }
+
+// ReactDOM.render(<Parent />, document.getElementById('root'))
+
+class App extends React.Component {
     constructor(props) {
         super(props);
-        console.log('parent constructor');
         this.state = {
-            count: 0
+            list: ['A', 'B', 'C', 'D', 'E', 'F']
         }
     }
-    UNSAFE_componentWillMount() {
-        console.log('parent will mount');
-    }
-    componentDidMount() {
-        console.log('parent did mount');
-    }
-    shouldComponentUpdate(nextProps, nextState) {
-        console.log('parent should update?');
-        return nextState.count % 2 == 0
-    }
-    UNSAFE_componentWillUpdate() {
-        console.log('parent will update', this.state.count);
-    }
-    componentDidUpdate(newProps, newState) {
-        console.log('parent did update', this.state.count);
-        console.log('_________________');
-    }
     handleClick = () => {
-        this.setState(state => ({
-            count: state.count + 1
-        }), () => {
-            // after componentDidMount
-            console.log('state: ', this.state.count);
+        this.setState({
+            list: ['A', 'C', 'E', 'B', 'G']
         })
     }
-    render() {
-        return <div>
-            <div>{this.state.count}</div>
-            <button onClick={this.handleClick}>+</button>
-            {
-                this.state.count === 2 ? <Child count={this.state.count} /> : null
-            }
-        </div>
+    render () {
+        return <React.Fragment>
+            <ul>
+                {
+                    this.state.list.map(item => <li key={item}>{item}</li>)
+                }
+            </ul>
+            <button onClick={this.handleClick}>change</button>
+        </React.Fragment>
     }
 }
 
-ReactDOM.render(<Parent />, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById('root'))
