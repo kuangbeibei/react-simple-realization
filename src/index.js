@@ -218,7 +218,9 @@ class Parent extends React.Component {
         return <div>
             <div>{this.state.count}</div>
             <button onClick={this.handleClick}>+</button>
-            <Child count={this.state.count} />
+            {
+                this.state.count === 2 ? <Child count={this.state.count} /> : null
+            }
         </div>
     }
 }

@@ -99,8 +99,10 @@ function mountFunctionComponent(vdom) {
 function iterateRender(childrenVdom, parentDom) {
     for (let i = 0, len = childrenVdom.length; i < len; i++) {
         let childVdom = childrenVdom[i];
-        childVdom.mountIndex = i;
-        render(childVdom, parentDom)
+        if (childVdom) {
+            childVdom.mountIndex = i;
+            render(childVdom, parentDom)
+        }
     }
 }
 
@@ -206,34 +208,36 @@ function updateChildren(parentDom, oldVChildren, newVChildren) {
     const keyedOldMap = {};
     let lastPlacedIndex = 0;
     oldVChildren.forEach((oldVChild, index) => {
-        let oldChildKey = oldVChild.key ? oldVChild.key : index;
+        let oldChildKey = oldVChild && oldVChild.key ? oldVChild && oldVChild.key : index;
         keyedOldMap[oldChildKey] = oldVChild;
     })
 
     // 2. build patch
     const patch = [];
     newVChildren.forEach((newVChild, index) => {
-        newVChild.mountIndex = index;
-        let newChildKey = newVChild.key ? newVChild.key : index;
-        let oldVChild = keyedOldMap[newChildKey];
-        if (oldVChild) {
-            updateElement(oldVChild, newVChild);
-            if (oldVChild.mountIndex < lastPlacedIndex) {
+        if (newVChild) {
+            newVChild.mountIndex = index;
+            let newChildKey = newVChild.key ? newVChild.key : index;
+            let oldVChild = keyedOldMap[newChildKey];
+            if (oldVChild) {
+                updateElement(oldVChild, newVChild);
+                if (oldVChild.mountIndex < lastPlacedIndex) {
+                    patch.push({
+                        type: MOVE,
+                        oldVChild,
+                        newVChild,
+                        mountIndex: index
+                    })
+                }
+                lastPlacedIndex = Math.max(lastPlacedIndex, oldVChild.mountIndex);
+                delete keyedOldMap[newChildKey];
+            } else {
                 patch.push({
-                    type: MOVE,
-                    oldVChild,
+                    type: PLACEMENT,
                     newVChild,
                     mountIndex: index
                 })
             }
-            lastPlacedIndex = Math.max(lastPlacedIndex, oldVChild.mountIndex);
-            delete keyedOldMap[newChildKey];
-        } else {
-            patch.push({
-                type: PLACEMENT,
-                newVChild,
-                mountIndex: index
-            })
         }
     })
 
@@ -242,7 +246,10 @@ function updateChildren(parentDom, oldVChildren, newVChildren) {
 
     Object.values(keyedOldMap).concat(moveVChildren).forEach(oldVchild => {
         let dom = findDom(oldVchild);
-        dom.remove();
+        if (dom) {
+            unMountVdom(oldVchild);
+            dom.remove();
+        };
     })
 
     patch.forEach(action => {
@@ -259,6 +266,9 @@ function updateChildren(parentDom, oldVChildren, newVChildren) {
             } else {
                 parentDom.appendChild(newDom)
             }
+            if (newDom.componentDidMount) {
+                newDom.componentDidMount()
+            }
         } else if (type === MOVE) {
             let oldDom = findDom(oldVChild);
             let childNode = childNodes[mountIndex];
@@ -273,6 +283,8 @@ function updateChildren(parentDom, oldVChildren, newVChildren) {
 
 function updateClassComponent(oldVdom, newVdom) {
     const componentInstance = newVdom.componentInstance = oldVdom.componentInstance;
+    newVdom.olderRenderVdom = oldVdom.olderRenderVdom;
+
     if (componentInstance.UNSAFE_componentWillReceiveProps) {
         componentInstance.UNSAFE_componentWillReceiveProps(newVdom.props)
     }
