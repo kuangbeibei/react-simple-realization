@@ -160,6 +160,9 @@ class Child extends React.Component {
     componentDidMount() {
         console.log('child did mount');
     }
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        console.log('UNSAFE_componentWillReceiveProps: ', nextProps);
+    }
     UNSAFE_componentWillUpdate() {
         console.log('child will update');
     }
@@ -192,12 +195,12 @@ class Parent extends React.Component {
     componentDidMount() {
         console.log('parent did mount');
     }
-    UNSAFE_componentWillUpdate() {
-        console.log('parent will update', this.state.count);
-    }
     shouldComponentUpdate(nextProps, nextState) {
         console.log('parent should update?');
         return nextState.count % 2 == 0
+    }
+    UNSAFE_componentWillUpdate() {
+        console.log('parent will update', this.state.count);
     }
     componentDidUpdate(newProps, newState) {
         console.log('parent did update', this.state.count);
@@ -215,7 +218,7 @@ class Parent extends React.Component {
         return <div>
             <div>{this.state.count}</div>
             <button onClick={this.handleClick}>+</button>
-            <Child count={this.state.count} />
+            {/* <Child count={this.state.count} /> */}
         </div>
     }
 }

@@ -22,7 +22,8 @@ class Updater {
         if (callback) this.callbacks.push(callback);
         this.emitUpdate()
     }
-    emitUpdate() {
+    emitUpdate(nextProps) {
+        this.nextProps = nextProps;
         if (updateQueue.isBatchingUpdate) {
             updateQueue.updaters.add(this);
         } else {
@@ -32,10 +33,10 @@ class Updater {
         // queueMicrotask(updateQueue.batchUpdate) // another way to setState, always batch update
     }
     updateComponent() {
-        const {pendingStates, componentInstance, callbacks} = this;
-        if(pendingStates.length) {
+        const {pendingStates, componentInstance, callbacks, nextProps} = this;
+        if(nextProps || pendingStates.length) {
             let newState = this.getState();
-            shouldUpdateComponent(componentInstance, newState);
+            shouldUpdateComponent(componentInstance, nextProps, newState);
             queueMicrotask(() => {
                 if (callbacks.length) {
                     callbacks.forEach(cb => cb.call(this))
@@ -62,19 +63,22 @@ class Updater {
     }
 }
 
-function shouldUpdateComponent(componentInstance, newState) {
+function shouldUpdateComponent(componentInstance, nextProps, newState) {
     let willUpdate = true;
 
     if (componentInstance.shouldComponentUpdate 
         && 
-        // now 'componentInstance.props' is the old props, after 'dom-diff', this part will be improved.
-        !componentInstance.shouldComponentUpdate(componentInstance.props, newState)
+        !componentInstance.shouldComponentUpdate(nextProps, newState)
     ) {
         willUpdate = false
     }
 
-    if (componentInstance.UNSAFE_componentWillUpdate) {
+    if (componentInstance.UNSAFE_componentWillUpdate && willUpdate) {
         componentInstance.UNSAFE_componentWillUpdate()
+    }
+
+    if (nextProps) {
+        componentInstance.props = nextProps;
     }
 
     componentInstance.state = newState;
@@ -100,9 +104,14 @@ export class Component {
         const oldRenderVdom = this.olderRenderVdom;
         const oldDom = findDom(oldRenderVdom);
         const newRenderVdom = this.render();
-        // The code below is very very important! Because we upate state in browser, there is no type of class component, it is all about vdom. 
+        compareTwoVdom(oldDom.parentNode, oldRenderVdom, newRenderVdom);
+        
+        // The code below is very very important! Because it is all about vdom. 
         // So, we have to manually connect vdom and dom, manually handle their relationship, or there will be misterious bugs.
-        this.olderRenderVdom = newRenderVdom.oldRenderVdom = newRenderVdom;
-        compareTwoVdom(oldDom, newRenderVdom);
+
+        // this.olderRenderVdom = newRenderVdom.oldRenderVdom = newRenderVdom;
+        // newRenderVdom.componentInstance = this;
+        
+        this.olderRenderVdom = newRenderVdom;
     }
 }

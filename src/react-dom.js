@@ -1,4 +1,4 @@
-import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT } from "./constants";
+import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT, MOVE, PLACEMENT } from "./constants";
 import { addEvent } from "./event";
 
 /**
@@ -64,8 +64,10 @@ function mountForwardRefComponnet(vdom) {
 function mountClassComponent(vdom) {
     const {type: ClassComponent, props, ref} = vdom;
     let componentInstance = new ClassComponent(props);
+    vdom.componentInstance = componentInstance;
 
     if (ref) ref.current = componentInstance; // assign ref.current to class component instance
+    
 
     // lifecycle - UNSAFE_componentWillMount
     if (componentInstance.UNSAFE_componentWillMount) {
@@ -96,7 +98,9 @@ function mountFunctionComponent(vdom) {
 
 function iterateRender(childrenVdom, parentDom) {
     for (let i = 0, len = childrenVdom.length; i < len; i++) {
-        render(childrenVdom[i], parentDom)
+        let childVdom = childrenVdom[i];
+        childVdom.mountIndex = i;
+        render(childVdom, parentDom)
     }
 }
 
@@ -138,10 +142,170 @@ export function findDom(vdom) {
     }
 }
 
-export function compareTwoVdom(oldDom, newVdom) {
-    const newDom = createDom(newVdom);
-    const parentDom = oldDom.parentNode;
-    parentDom.replaceChild(newDom, oldDom)
+export function compareTwoVdom(parentDom, oldVdom, newVdom) {
+    if (!oldVdom && !newVdom) return null;
+    if (oldVdom && !newVdom) return unMountVdom(oldVdom);
+    if (!oldVdom && newVdom) {
+        // create new dom
+        const newDom = createDom(newVdom);
+        // there is an obvious bug here, fix it later
+        parentDom.appendChild(newDom); 
+        if (newDom.componentDidMount) {
+            newDom.componentDidMount()
+        }
+        return
+    }
+    if (oldVdom && newVdom) {
+        if (oldVdom.type !== newVdom.type) {
+            console.log('type不相同')
+            unMountVdom(oldVdom);
+            let newDom = createDom(newVdom);
+            // there is an obvious bug here, fix it later
+            parentDom.appendChild(newDom);
+            if (newDom.componentDidMount) {
+                newDom.componentDidMount()
+            }
+            return
+        } else if (oldVdom.type === newVdom.type) {
+            console.log('type相同走这里');
+            // dom-diff situation
+            updateElement(oldVdom, newVdom)
+        }
+    }
+}
+
+function updateElement(oldVdom, newVdom) {
+    const {type} = oldVdom;
+    if (type === REACT_TEXT) {
+        let currentDom = newVdom.dom = findDom(oldVdom);
+        if (oldVdom.props !== newVdom.props) {
+            currentDom.textContent = newVdom.props;
+        }
+    } else if (typeof type === 'string') {
+        let currentDom = newVdom.dom = findDom(oldVdom);
+        updateProps(currentDom, oldVdom.props, newVdom.props);
+        updateChildren(currentDom, oldVdom.props.children, newVdom.props.children);
+    } else if (typeof type === 'function') {
+        if (type.isReactComponent) {
+            updateClassComponent(oldVdom, newVdom)
+        } else {
+            updateFunctionComponent(oldVdom, newVdom)
+        }
+    }
+}
+
+/**
+ * update children nodes
+ * @param {*} currentDom real old dom
+ * @param {*} oldChildren children of old vdom 
+ * @param {*} newChildren children of new vdom
+ */
+function updateChildren(parentDom, oldVChildren, newVChildren) {
+    oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren];
+    newVChildren = Array.isArray(newVChildren) ? newVChildren : [newVChildren];
+
+    // 1. build a map
+    const keyedOldMap = {};
+    let lastPlacedIndex = 0;
+    oldVChildren.forEach((oldVChild, index) => {
+        let oldChildKey = oldVChild.key ? oldVChild.key : index;
+        keyedOldMap[oldChildKey] = oldVChild;
+    })
+
+    // 2. build patch
+    const patch = [];
+    newVChildren.forEach((newVChild, index) => {
+        newVChild.mountIndex = index;
+        let newChildKey = newVChild.key ? newVChild.key : index;
+        let oldVChild = keyedOldMap[newChildKey];
+        if (oldVChild) {
+            updateElement(oldVChild, newVChild);
+            if (oldVChild.mountIndex < lastPlacedIndex) {
+                patch.push({
+                    type: MOVE,
+                    oldVChild,
+                    newVChild,
+                    mountIndex: index
+                })
+            }
+            lastPlacedIndex = Math.max(lastPlacedIndex, oldVChild.mountIndex);
+            delete keyedOldMap[newChildKey];
+        } else {
+            patch.push({
+                type: PLACEMENT,
+                newVChild,
+                mountIndex: index
+            })
+        }
+    })
+
+    // filter move actions in patch
+    const moveVChildren = patch.filter(action => action.type === MOVE).map(action => action.oldVChild)
+
+    Object.values(keyedOldMap).concat(moveVChildren).forEach(oldVchild => {
+        let dom = findDom(oldVchild);
+        dom.remove();
+    })
+
+    patch.forEach(action => {
+        const {type, oldVChild, newVChild, mountIndex} = action;
+        
+        // real dom nodes
+        const childNodes = parentDom.childNodes;
+
+        if (type === PLACEMENT) {
+            let newDom = createDom(newVChild);
+            let childNode = childNodes[mountIndex];
+            if (childNode) {
+                parentDom.insertBefore(newDom, childNode)
+            } else {
+                parentDom.appendChild(newDom)
+            }
+        } else if (type === MOVE) {
+            let oldDom = findDom(oldVChild);
+            let childNode = childNodes[mountIndex];
+            if (childNode) {
+                parentDom.insertBefore(oldDom, childNode)
+            } else {
+                parentDom.appendChild(oldDom)
+            }
+        }
+    })
+}
+
+function updateClassComponent(oldVdom, newVdom) {
+    const componentInstance = newVdom.componentInstance = oldVdom.componentInstance;
+    if (componentInstance.UNSAFE_componentWillReceiveProps) {
+        componentInstance.UNSAFE_componentWillReceiveProps()
+    }
+    componentInstance.updater.emitUpdate(newVdom.props)
+}
+
+function updateFunctionComponent(oldVdom, newVdom) {
+    let currentDom = findDom(oldVdom);
+    if (!currentDom) return;
+    let {type, props} = newVdom;
+    let newRenderVdom = type(props);
+    compareTwoVdom(currentDom.parentNode, oldVdom.oldRenderVdom, newRenderVdom);
+    newRenderVdom.oldRenderVdom = newRenderVdom;
+}
+
+/**
+ * unMount real dom iterately 
+ * @param {*} oldVdom 
+ */
+function unMountVdom(oldVdom) {
+    const {componentInstance, props, ref} = oldVdom;
+    const currentDom = findDom(oldVdom);
+    if (componentInstance.componentWillUnMount) {
+        componentInstance.componentWillUnMount()
+    }
+    if (ref) ref.current = null;
+    if (props.children) {
+        let children = Array.isArray(props.children) ? props.children : [props.children];
+        children.forEach(unMountVdom)
+    }
+    if (currentDom) currentDom.remove()
 }
 
 
