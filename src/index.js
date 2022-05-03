@@ -257,42 +257,97 @@ import ReactDOM from "./react-dom";
 // ReactDOM.render(<App />, document.getElementById('root'))
 
 /**
+ * new lifecycle method: 
  * static method: getDerivedStateFromProps (instead of UNSAFE_componentWillReceiveProps)
- * prototype method: getSnapShotBeforeUpdate
  */
-class App extends React.Component {
+// class App extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         this.state = {
+//             count: 0
+//         }
+//     }
+//     handleClick = () => {
+//         this.setState({
+//             count: this.state.count + 1
+//         })
+//     }
+//     render() {
+//         return <React.Fragment>
+//             <div>{this.state.count}</div>
+//             <button onClick={this.handleClick}>+</button>
+//             <SubApp count={this.state.count}/>
+//         </React.Fragment>
+//     }
+// }
+
+// class SubApp extends React.Component {
+//     state = {
+//         number: 0
+//     }
+//     static getDerivedStateFromProps(nextProps, nextState) {
+//         return {
+//             number: nextProps.count * 2
+//         }
+//     }
+//     render () {
+//         return  <div>sub App: {this.state.number}</div>
+//     }
+// }
+
+// ReactDOM.render(<App />, document.getElementById('root'))
+
+/**
+ * new lifecycle method:
+ * prototype method: getSnapshotBeforeUpdate
+ */
+class ScrollList extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            count: 0
+            message: []
         }
+        this.container = React.createRef()
     }
-    handleClick = () => {
-        this.setState({
-            count: this.state.count + 1
-        })
+    get wrapper () {
+        return this.container.current;
     }
-    render() {
-        return <React.Fragment>
-            <div>{this.state.count}</div>
-            <button onClick={this.handleClick}>+</button>
-            <SubApp count={this.state.count}/>
-        </React.Fragment>
+    componentDidMount() {
+        this.timerId = setInterval(() => {
+            this.setState({
+                message: [`${this.state.message.length}`, ...this.state.message]
+            })
+        }, 1000)
     }
-}
-
-class SubApp extends React.Component {
-    state = {
-        number: 0
+    componentWillUnMount () {
+        clearInterval(this.timerId);
+        this.timerId = null;
     }
-    static getDerivedStateFromProps(nextProps, nextState) {
+    getSnapshotBeforeUpdate() {
+        // console.log('getSnapshotBeforeUpdate:', this.wrapper.scrollTop,  this.wrapper.scrollHeight);
         return {
-            number: nextProps.count * 2
+            prevScrollTop: this.wrapper.scrollTop,
+            prevScrollHeight: this.wrapper.scrollHeight
         }
+    }
+    componentDidUpdate(nextProps, nextState, {prevScrollTop, prevScrollHeight}) {
+        console.log('prevScrollTop, prevScrollHeight', this.container.current.scrollHeight, prevScrollHeight);
+        this.container.current.scrollTop = prevScrollTop + (this.wrapper.scrollHeight - prevScrollHeight)
     }
     render () {
-        return  <div>sub App: {this.state.number}</div>
+        return <ul style={{
+                width: '200px',
+                height: '180px',
+                border: '1px solid indianred',
+                overflow: 'auto',
+                fontSize: '30px'
+            }}
+            ref={this.container}
+        >
+            {
+                this.state.message.map((item, index) => <li key={index}>{item}</li>)
+            }
+        </ul>
     }
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<ScrollList />, document.getElementById('root'))

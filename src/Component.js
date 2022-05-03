@@ -85,9 +85,6 @@ function shouldUpdateComponent(componentInstance, nextProps, newState) {
     
     if (willUpdate) {
         componentInstance.forceUpdate();
-        if (componentInstance.componentDidUpdate) {
-            componentInstance.componentDidUpdate(componentInstance.props, newState)
-        }
     }
 }
 
@@ -113,6 +110,8 @@ export class Component {
             }
         }
 
+        let snapshotVal = this.getSnapshotBeforeUpdate && this.getSnapshotBeforeUpdate();
+
         const newRenderVdom = this.render();
 
         compareTwoVdom(oldDom.parentNode, oldRenderVdom, newRenderVdom);
@@ -124,5 +123,7 @@ export class Component {
         // newRenderVdom.componentInstance = this;
         
         this.olderRenderVdom = newRenderVdom;
+
+        this.componentDidUpdate && this.componentDidUpdate(this.props, this.state, snapshotVal)
     }
 }
