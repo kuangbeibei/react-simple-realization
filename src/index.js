@@ -227,27 +227,71 @@ import ReactDOM from "./react-dom";
 
 // ReactDOM.render(<Parent />, document.getElementById('root'))
 
+/**
+ * dom-diff example
+ */
+// class App extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         this.state = {
+//             list: ['A', 'B', 'C', 'D', 'E', 'F']
+//         }
+//     }
+//     handleClick = () => {
+//         this.setState({
+//             list: ['A', 'C', 'E', 'B', 'G']
+//         })
+//     }
+//     render () {
+//         return <React.Fragment>
+//             <ul>
+//                 {
+//                     this.state.list.map(item => <li key={item}>{item}</li>)
+//                 }
+//             </ul>
+//             <button onClick={this.handleClick}>change</button>
+//         </React.Fragment>
+//     }
+// }
+
+// ReactDOM.render(<App />, document.getElementById('root'))
+
+/**
+ * static method: getDerivedStateFromProps (instead of UNSAFE_componentWillReceiveProps)
+ * prototype method: getSnapShotBeforeUpdate
+ */
 class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            list: ['A', 'B', 'C', 'D', 'E', 'F']
+            count: 0
         }
     }
     handleClick = () => {
         this.setState({
-            list: ['A', 'C', 'E', 'B', 'G']
+            count: this.state.count + 1
         })
     }
-    render () {
+    render() {
         return <React.Fragment>
-            <ul>
-                {
-                    this.state.list.map(item => <li key={item}>{item}</li>)
-                }
-            </ul>
-            <button onClick={this.handleClick}>change</button>
+            <div>{this.state.count}</div>
+            <button onClick={this.handleClick}>+</button>
+            <SubApp count={this.state.count}/>
         </React.Fragment>
+    }
+}
+
+class SubApp extends React.Component {
+    state = {
+        number: 0
+    }
+    static getDerivedStateFromProps(nextProps, nextState) {
+        return {
+            number: nextProps.count * 2
+        }
+    }
+    render () {
+        return  <div>sub App: {this.state.number}</div>
     }
 }
 

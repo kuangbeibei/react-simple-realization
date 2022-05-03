@@ -103,7 +103,18 @@ export class Component {
     forceUpdate() {
         const oldRenderVdom = this.olderRenderVdom;
         const oldDom = findDom(oldRenderVdom);
+
+        if (this.constructor.getDerivedStateFromProps) {
+            // setState, forceUpdate, props change
+            let newState = this.constructor.getDerivedStateFromProps(this.props, this.state);
+            this.state = {
+                ...this.state,
+                ...newState
+            }
+        }
+
         const newRenderVdom = this.render();
+
         compareTwoVdom(oldDom.parentNode, oldRenderVdom, newRenderVdom);
         
         // The code below is very very important! Because it is all about vdom. 
