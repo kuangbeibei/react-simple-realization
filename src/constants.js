@@ -4,4 +4,6 @@ export const REACT_TEXT = Symbol('react.text');
 export const REACT_FORWARDREF = Symbol('react.forward_ref');
 export const MOVE = 'MOVE';
 export const PLACEMENT = 'PLACEMENT';
-export const REACT_FRAGMENT = Symbol('react.fragment')
+export const REACT_FRAGMENT = Symbol('react.fragment');
+export const REACT_PROVIDER = Symbol('react.provider');
+export const REACT_CONTEXT = Symbol('react.context')

@@ -98,7 +98,7 @@ export class Component {
         this.updater.addState(partialState, callback);
     }
     forceUpdate() {
-        const oldRenderVdom = this.olderRenderVdom;
+        const oldRenderVdom = this.oldRenderVdom;
         const oldDom = findDom(oldRenderVdom);
 
         if (this.constructor.getDerivedStateFromProps) {
@@ -110,19 +110,24 @@ export class Component {
             }
         }
 
+        if (this.constructor.contextType) {
+            this.context = this.constructor.contextType._currentValue;
+        }
+
         let snapshotVal = this.getSnapshotBeforeUpdate && this.getSnapshotBeforeUpdate();
 
         const newRenderVdom = this.render();
 
+        // dom-diff change the real dom
         compareTwoVdom(oldDom.parentNode, oldRenderVdom, newRenderVdom);
         
         // The code below is very very important! Because it is all about vdom. 
         // So, we have to manually connect vdom and dom, manually handle their relationship, or there will be misterious bugs.
 
-        // this.olderRenderVdom = newRenderVdom.oldRenderVdom = newRenderVdom;
+        // this.oldRenderVdom = newRenderVdom.oldRenderVdom = newRenderVdom;
         // newRenderVdom.componentInstance = this;
         
-        this.olderRenderVdom = newRenderVdom;
+        this.oldRenderVdom = newRenderVdom;
 
         this.componentDidUpdate && this.componentDidUpdate(this.props, this.state, snapshotVal)
     }
