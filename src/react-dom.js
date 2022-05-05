@@ -251,6 +251,7 @@ function updateContextComponent(oldVdom, newVdom) {
     const renderVdom = props.children(context._currentValue);
     compareTwoVdom(currentDom.parentNode, oldVdom.oldRenderVdom, renderVdom);
     newVdom.oldRenderVdom = renderVdom;
+    
 }
 
 /**
@@ -356,7 +357,7 @@ function updateFunctionComponent(oldVdom, newVdom) {
     let {type, props} = newVdom;
     let newRenderVdom = type(props);
     compareTwoVdom(currentDom.parentNode, oldVdom.oldRenderVdom, newRenderVdom);
-    newRenderVdom.oldRenderVdom = newRenderVdom;
+    newVdom.oldRenderVdom = newRenderVdom;
 }
 
 /**

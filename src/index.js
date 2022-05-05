@@ -384,13 +384,16 @@ class Header extends React.Component {
 function Content () {
     return <ColorContext.Consumer>
         {
-            (contextValue) => <div style={{
-               ...style,
-                border: `1px solid ${contextValue.color}`
-            }}>
-                Content
-                <button onClick={() => contextValue.changeColor('blue')}>change</button>
-            </div>
+            (contextValue) => {
+                console.log('Content----', contextValue);
+                return <div style={{
+                    ...style,
+                     border: `1px solid ${contextValue.color}`
+                 }}>
+                     Content
+                     <button onClick={() => contextValue.changeColor('blue')}>change</button>
+                 </div>
+            }
         }
     </ColorContext.Consumer>
 }
