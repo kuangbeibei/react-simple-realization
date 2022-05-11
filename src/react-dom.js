@@ -352,7 +352,6 @@ function updateClassComponent(oldVdom, newVdom) {
 }
 
 function updateFunctionComponent(oldVdom, newVdom) {
-    debugger;
     let currentDom = findDom(oldVdom);
     if (!currentDom) return;
     let {type, props} = newVdom;

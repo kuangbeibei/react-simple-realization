@@ -437,51 +437,87 @@ import ReactDOM from "./react-dom";
 /**
  * React.cloneElement
  */
-class ButtonLibrary extends React.Component {
-    constructor(props) {
-        super(props)
+// class ButtonLibrary extends React.Component {
+//     constructor(props) {
+//         super(props)
+//     }
+//     componentDidMount() {
+//         console.log('button library did mount');
+//     }
+//     render() {
+//         return <button><span>ll button library {`${this.props.count}`}</span></button>
+//     }
+// }
+
+// const processButton = OldButtonComponent => {
+//     return class MyButton extends ButtonLibrary {
+//         constructor(props) {
+//             super(props);
+//             this.state = {
+//                 count: 0
+//             }
+//         }
+//         componentDidMound() {
+//             console.log('mybutton component did mount');
+//             super.componentDidMount()
+//         }
+//         handleClick = () => {
+//             this.setState({
+//                 count: this.state.count + 1
+//             })
+//         }
+//         render() {
+//             console.log('mybutton render');
+//             const buttonLibrary = super.render();
+//             const newProps = {
+//                 ...buttonLibrary.props,
+//                 ...this.props,
+//                 onClick: this.handleClick
+//             }
+//             console.log('buttonLibrary~~~', buttonLibrary);
+//             const result = React.cloneElement(buttonLibrary, newProps, this.state.count);
+//             console.log('result~~~', result);
+//             return result;
+//         }
+//     }
+// }
+
+// const MyButton = processButton(ButtonLibrary)
+
+// ReactDOM.render(<MyButton />, document.getElementById('root'));
+
+
+/**
+ * PureComponent
+ */
+
+class Counter extends React.PureComponent {
+    render() {
+        console.log('counter render~~');
+        return <div>{this.props.count}</div>
     }
-    componentDidMount() {
-        console.log('button library did mount');
+}
+
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.inputRef = React.createRef();
+        this.state = {
+            count: 0
+        }
+    }
+    handleClick = () => {
+        this.setState({
+            count: this.state.count + parseInt(this.inputRef.current.value)
+        })
     }
     render() {
-        return <button><span>ll button library {`${this.props.count}`}</span></button>
+        return <React.Fragment>
+             <Counter count={this.state.count}/>
+            <input ref={this.inputRef} defaultValue={0}/>
+            <button onClick={this.handleClick}>+</button>
+        </React.Fragment>
     }
 }
 
-const processButton = OldButtonComponent => {
-    return class MyButton extends ButtonLibrary {
-        constructor(props) {
-            super(props);
-            this.state = {
-                count: 0
-            }
-        }
-        componentDidMound() {
-            console.log('mybutton component did mount');
-            super.componentDidMount()
-        }
-        handleClick = () => {
-            this.setState({
-                count: this.state.count + 1
-            })
-        }
-        render() {
-            console.log('mybutton render');
-            const buttonLibrary = super.render();
-            const newProps = {
-                ...buttonLibrary.props,
-                ...this.props,
-                onClick: this.handleClick
-            }
-            console.log('buttonLibrary~~~', buttonLibrary);
-            const result = React.cloneElement(buttonLibrary, newProps, this.state.count);
-            console.log('result~~~', result);
-            return result;
-        }
-    }
-}
-
-const MyButton = processButton(ButtonLibrary)
-
-ReactDOM.render(<MyButton />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));

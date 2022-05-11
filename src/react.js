@@ -1,5 +1,5 @@
 import {REACT_ELEMENT, REACT_FORWARDREF, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT} from "./constants";
-import {toVdom} from "./utils"
+import {shallowEqual, toVdom} from "./utils"
 import { Component } from "./Component";
 
 /**
@@ -12,9 +12,11 @@ import { Component } from "./Component";
 const createElement = function (type, config, children) {
     let key, ref, props = {};
 
-    if (config.ref) {
-        ref = config.ref;
+    if (config) {
         key = config.key;
+        if (config.ref) {
+            ref = config.ref;
+        }
         delete config.ref;
         delete config.key; // used for dom-diff
         delete config.__self;
@@ -82,6 +84,12 @@ function cloneElement(element, newProps, ...newChildren) {
     }
 }
 
+class PureComponent extends Component {
+    shouldComponentUpdate(nextProps, nextState) {
+        return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
+    }
+}
+
 export default {
     createElement,
     Component,
@@ -89,5 +97,6 @@ export default {
     forwardRef,
     Fragment: REACT_FRAGMENT,
     createContext,
-    cloneElement
+    cloneElement,
+    PureComponent
 }
