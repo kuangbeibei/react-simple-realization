@@ -352,12 +352,13 @@ function updateClassComponent(oldVdom, newVdom) {
 }
 
 function updateFunctionComponent(oldVdom, newVdom) {
+    debugger;
     let currentDom = findDom(oldVdom);
     if (!currentDom) return;
     let {type, props} = newVdom;
     let newRenderVdom = type(props);
     compareTwoVdom(currentDom.parentNode, oldVdom.oldRenderVdom, newRenderVdom);
-    newVdom.oldRenderVdom = newRenderVdom;
+    newRenderVdom.oldRenderVdom = newRenderVdom;
 }
 
 /**

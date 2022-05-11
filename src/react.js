@@ -67,11 +67,27 @@ function createContext() {
     return context
 }
 
+function cloneElement(element, newProps, ...newChildren) {
+    let children = newChildren.length === 1 ? toVdom(newChildren[0]) : newChildren.map(toVdom);
+ 
+    const props = {
+        ...element.props,
+        ...newProps,
+        children
+    };
+
+    return {
+        ...element,
+        props
+    }
+}
+
 export default {
     createElement,
     Component,
     createRef,
     forwardRef,
     Fragment: REACT_FRAGMENT,
-    createContext
+    createContext,
+    cloneElement
 }

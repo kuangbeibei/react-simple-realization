@@ -355,80 +355,133 @@ import ReactDOM from "./react-dom";
 
 /**
  * Context
+ * Provider
+ * Consumer
  */
-const ColorContext = React.createContext();
+// const ColorContext = React.createContext();
 
-const style = {
-    marginLeft: '20px',
-    marginTop: '5px',
-    width: '200px',
-    height: '70px',
-}
+// const style = {
+//     marginLeft: '20px',
+//     marginTop: '5px',
+//     width: '200px',
+//     height: '70px',
+// }
 
-class Header extends React.Component {
-    static contextType = ColorContext
+// class Header extends React.Component {
+//     static contextType = ColorContext
+//     constructor(props) {
+//         super(props)
+//     }
+//     render() {
+//         return <div style={{
+//             ...style,
+//             border: `1px solid ${this.context.color}`
+//         }}>
+//             Header
+//             <button onClick={() => this.context.changeColor('orange')}>change</button>
+//         </div>
+//     }
+// }
+
+// function Content () {
+//     return <ColorContext.Consumer>
+//         {
+//             (contextValue) => {
+//                 return <div style={{
+//                     ...style,
+//                      border: `1px solid ${contextValue.color}`
+//                  }}>
+//                      Content
+//                      <button onClick={() => contextValue.changeColor('blue')}>change</button>
+//                  </div>
+//             }
+//         }
+//     </ColorContext.Consumer>
+// }
+
+
+// class App extends React.Component {
+//     constructor(props){
+//         super(props);
+//         this.state = {
+//             color: 'yellow'
+//         }
+//     }
+//     changeColor = (color) => {
+//         this.setState({
+//             color
+//         })
+//     }
+//     render() {
+//         const contextValue = {
+//             color: this.state.color,
+//             changeColor: this.changeColor
+//         }
+//         return <ColorContext.Provider value={contextValue}>
+//             <div style={{
+//                 width: '300px',
+//                 height: '180px',
+//                 border: `1px solid ${this.state.color}`
+//             }}>
+//                 Panel
+//                 <button onClick={() => this.changeColor('yellow')}>reset</button>
+//                 <Header />
+//                 <Content />
+//             </div>
+//         </ColorContext.Provider>
+//     }
+// }
+
+// ReactDOM.render(<App />, document.getElementById('root'));
+
+/**
+ * React.cloneElement
+ */
+class ButtonLibrary extends React.Component {
     constructor(props) {
         super(props)
     }
+    componentDidMount() {
+        console.log('button library did mount');
+    }
     render() {
-        return <div style={{
-            ...style,
-            border: `1px solid ${this.context.color}`
-        }}>
-            Header
-            <button onClick={() => this.context.changeColor('orange')}>change</button>
-        </div>
+        return <button><span>ll button library {`${this.props.count}`}</span></button>
     }
 }
 
-function Content () {
-    return <ColorContext.Consumer>
-        {
-            (contextValue) => {
-                console.log('Content----', contextValue);
-                return <div style={{
-                    ...style,
-                     border: `1px solid ${contextValue.color}`
-                 }}>
-                     Content
-                     <button onClick={() => contextValue.changeColor('blue')}>change</button>
-                 </div>
+const processButton = OldButtonComponent => {
+    return class MyButton extends ButtonLibrary {
+        constructor(props) {
+            super(props);
+            this.state = {
+                count: 0
             }
         }
-    </ColorContext.Consumer>
-}
-
-
-class App extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            color: 'yellow'
+        componentDidMound() {
+            console.log('mybutton component did mount');
+            super.componentDidMount()
         }
-    }
-    changeColor = (color) => {
-        this.setState({
-            color
-        })
-    }
-    render() {
-        const contextValue = {
-            color: this.state.color,
-            changeColor: this.changeColor
+        handleClick = () => {
+            this.setState({
+                count: this.state.count + 1
+            })
         }
-        return <ColorContext.Provider value={contextValue}>
-            <div style={{
-                width: '300px',
-                height: '180px',
-                border: `1px solid ${this.state.color}`
-            }}>
-                Panel
-                <button onClick={() => this.changeColor('yellow')}>reset</button>
-                <Header />
-                <Content />
-            </div>
-        </ColorContext.Provider>
+        render() {
+            console.log('mybutton render');
+            const buttonLibrary = super.render();
+            const newProps = {
+                ...buttonLibrary.props,
+                ...this.props,
+                onClick: this.handleClick
+            }
+            console.log('buttonLibrary~~~', buttonLibrary);
+            const result = React.cloneElement(buttonLibrary, newProps, this.state.count);
+            console.log('result~~~', result);
+            return result;
+        }
     }
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const MyButton = processButton(ButtonLibrary)
+
+ReactDOM.render(<MyButton />, document.getElementById('root'));
