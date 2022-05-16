@@ -1,4 +1,4 @@
-import {REACT_ELEMENT, REACT_FORWARDREF, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT} from "./constants";
+import {REACT_ELEMENT, REACT_FORWARDREF, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO} from "./constants";
 import {shallowEqual, toVdom} from "./utils"
 import { Component } from "./Component";
 
@@ -90,6 +90,14 @@ class PureComponent extends Component {
     }
 }
 
+function memo(FunctionComponent, compare = null) {
+    return {
+        $$typeof: REACT_MEMO,
+        compare,
+        type: FunctionComponent
+    }
+}
+
 export default {
     createElement,
     Component,
@@ -98,5 +106,6 @@ export default {
     Fragment: REACT_FRAGMENT,
     createContext,
     cloneElement,
-    PureComponent
+    PureComponent,
+    memo
 }

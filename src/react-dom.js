@@ -1,5 +1,6 @@
-import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT, MOVE, PLACEMENT, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT } from "./constants";
+import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT, MOVE, PLACEMENT, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO } from "./constants";
 import { addEvent } from "./event";
+import { shallowEqual } from "./utils";
 
 /**
  * using vdom to generate real dom
@@ -35,6 +36,8 @@ export function createDom(vdom) {
         return mountProviderComponent(vdom)
     } else if (type && type.$$typeof === REACT_CONTEXT) {
         return mountContextComponent(vdom)
+    } else if (type && type.$$typeof === REACT_MEMO) {
+        return mountMemoComponent(vdom);
     } else {
         // render html tags
         dom = document.createElement(type)
@@ -59,6 +62,13 @@ export function createDom(vdom) {
     }
 
     return dom;
+}
+
+function mountMemoComponent(vdom) {
+    const {type, props} = vdom;
+    const renderVdom = type.type(props);
+    vdom.oldRenderVdom = renderVdom;
+    return createDom(renderVdom);
 }
 
 function mountProviderComponent(vdom) {
@@ -225,13 +235,28 @@ function updateElement(oldVdom, newVdom) {
             updateFunctionComponent(oldVdom, newVdom)
         }
     } else if (type && type.$$typeof === REACT_PROVIDER) {
-        console.log('type.$$typeof === REACT_PROVIDER');
         updateProviderComponent(oldVdom, newVdom)
     } else if (type && type.$$typeof === REACT_CONTEXT) {
-        console.log('type.$$typeof === REACT_CONTEXT');
         updateContextComponent(oldVdom, newVdom)
+    } else if (type && type.$$typeof === REACT_MEMO) {
+        updateMemoComponent(oldVdom, newVdom);
     }
 }
+
+function updateMemoComponent(oldVdom, newVdom) {
+    debugger;
+    const {type: {compare}, props: prevProps} = oldVdom;
+    const {props: nextProps} = newVdom;
+    const compareFn = compare || shallowEqual;
+    if (!compareFn(prevProps, nextProps)) {
+        const currentDom = findDom(oldVdom);
+        const renderVdom = newVdom.type.type(nextProps);
+        compareTwoVdom(currentDom.parentNode, oldVdom.oldRenderVdom, renderVdom);
+        newVdom.oldRenderVdom = renderVdom;
+    } else {
+        newVdom.oldRenderVdom = oldVdom.oldRenderVdom;
+    }
+} 
 
 function updateProviderComponent(oldVdom, newVdom) {
     const currentDom = findDom(oldVdom);
@@ -352,12 +377,13 @@ function updateClassComponent(oldVdom, newVdom) {
 }
 
 function updateFunctionComponent(oldVdom, newVdom) {
+    debugger;
     let currentDom = findDom(oldVdom);
     if (!currentDom) return;
     let {type, props} = newVdom;
     let newRenderVdom = type(props);
     compareTwoVdom(currentDom.parentNode, oldVdom.oldRenderVdom, newRenderVdom);
-    newRenderVdom.oldRenderVdom = newRenderVdom;
+    newVdom.oldRenderVdom = newRenderVdom;
 }
 
 /**
@@ -378,7 +404,7 @@ function unMountVdom(oldVdom) {
     if (currentDom) currentDom.remove()
 }
 
-
 export default {
-    render
+    render,
+    createPortal: render
 }

@@ -488,7 +488,8 @@ import ReactDOM from "./react-dom";
 
 
 /**
- * PureComponent
+ * React.PureComponent
+ * React.memo
  */
 
 class Counter extends React.PureComponent {
@@ -497,6 +498,14 @@ class Counter extends React.PureComponent {
         return <div>{this.props.count}</div>
     }
 }
+
+function AnotherCounter(props) {
+    console.log('another counter render');
+    return <div>{props.count}</div>
+}
+
+const MemoAnotherCounter = React.memo(AnotherCounter);
+console.log('MemoAnotherCounter',MemoAnotherCounter);
 
 class App extends React.Component {
     constructor(props) {
@@ -513,7 +522,8 @@ class App extends React.Component {
     }
     render() {
         return <React.Fragment>
-             <Counter count={this.state.count}/>
+            <MemoAnotherCounter count={this.state.count}/>
+            <Counter count={this.state.count}/>
             <input ref={this.inputRef} defaultValue={0}/>
             <button onClick={this.handleClick}>+</button>
         </React.Fragment>
