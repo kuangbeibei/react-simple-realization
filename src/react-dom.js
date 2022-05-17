@@ -413,10 +413,42 @@ function unMountVdom(oldVdom) {
 }
 
 /**
- * useState
+ * 
+ * @param {*} reducer 
  * @param {*} initialState 
  * @returns 
  */
+export function useReducer(reducer, initialState) {
+    hookStates[hookIndex] = hookStates[hookIndex] || initialState;
+    const currentIndex = hookIndex;
+
+    function dispatch(type) {
+        if (reducer) {
+            hookStates[currentIndex] = reducer(hookStates[currentIndex], type);
+        } else {
+            hookStates[currentIndex] = type; // in the case of useState, type is the newState
+        }
+       
+        scheduleUpdate();
+    }
+
+    return [hookStates[hookIndex++], dispatch]
+}
+
+/**
+ * actually, useState is a syntactic sugar of useReducer
+ * @param {*} initialState 
+ * @returns 
+ */
+export function useState(initialState) {
+    return useReducer(null, initialState)
+}
+
+/**
+ * useState
+ * @param {*} initialState 
+ * @returns 
+ * 
 export function useState(initialState) {
     hookStates[hookIndex] = hookStates[hookIndex] || initialState;
     const currentIndex = hookIndex;
@@ -426,6 +458,7 @@ export function useState(initialState) {
     };
     return [hookStates[hookIndex++], setState]
 }
+ */
 
 export function useMemo(factory, deps) {
     if (hookStates[hookIndex]) {
@@ -461,18 +494,6 @@ export function useCallback(callback, deps) {
         hookStates[hookIndex++] = [callback, deps];
         return callback
     }
-}
-
-export function useReducer(reducer, initialState) {
-    hookStates[hookIndex] = hookStates[hookIndex] || initialState;
-    const currentIndex = hookIndex;
-
-    function dispatch(type) {
-        hookStates[currentIndex] = reducer(hookStates[currentIndex], type);
-        scheduleUpdate();
-    }
-
-    return [hookStates[hookIndex++], dispatch]
 }
 
 export default {
