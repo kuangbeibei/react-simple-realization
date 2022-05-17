@@ -2,17 +2,29 @@ import { REACT_CLASS_COMPONENT, REACT_FORWARDREF, REACT_TEXT, MOVE, PLACEMENT, R
 import { addEvent } from "./event";
 import { shallowEqual } from "./utils";
 
+let scheduleUpdate;
+let hookIndex = 0;
+let hookStates = [];
+
 /**
  * using vdom to generate real dom
  * @param {*} vdom 
  * @param {*} container 
  */
 export function render(vdom, container) {
+    mount(vdom, container);
+    scheduleUpdate = () => {
+        hookIndex = 0;
+        compareTwoVdom(container, vdom, vdom)
+    }
+}
+
+export function mount(vdom, container) {
     let realDom = createDom(vdom);
     container.appendChild(realDom);
     if (realDom.componentDidMount) {
         realDom.componentDidMount()
-    }
+    };
 }
 
 export function createDom(vdom) {
@@ -48,7 +60,7 @@ export function createDom(vdom) {
         if (props.children) {
             if (typeof props.children === 'object' && props.children.$$typeof) {
                 props.children.mountIndex = 0;
-                render(props.children, dom)
+                mount(props.children, dom)
             } else if (Array.isArray(props.children)) {
                 iterateRender(props.children, dom)
             }
@@ -141,7 +153,7 @@ function iterateRender(childrenVdom, parentDom) {
         let childVdom = childrenVdom[i];
         if (childVdom) {
             childVdom.mountIndex = i;
-            render(childVdom, parentDom)
+            mount(childVdom, parentDom)
         }
     }
 }
@@ -244,7 +256,6 @@ function updateElement(oldVdom, newVdom) {
 }
 
 function updateMemoComponent(oldVdom, newVdom) {
-    debugger;
     const {type: {compare}, props: prevProps} = oldVdom;
     const {props: nextProps} = newVdom;
     const compareFn = compare || shallowEqual;
@@ -275,8 +286,7 @@ function updateContextComponent(oldVdom, newVdom) {
     const context = type._context;
     const renderVdom = props.children(context._currentValue);
     compareTwoVdom(currentDom.parentNode, oldVdom.oldRenderVdom, renderVdom);
-    newVdom.oldRenderVdom = renderVdom;
-    
+    newVdom.oldRenderVdom = renderVdom;   
 }
 
 /**
@@ -377,7 +387,6 @@ function updateClassComponent(oldVdom, newVdom) {
 }
 
 function updateFunctionComponent(oldVdom, newVdom) {
-    debugger;
     let currentDom = findDom(oldVdom);
     if (!currentDom) return;
     let {type, props} = newVdom;
@@ -402,6 +411,21 @@ function unMountVdom(oldVdom) {
         children.forEach(unMountVdom)
     }
     if (currentDom) currentDom.remove()
+}
+
+/**
+ * useState
+ * @param {*} initialState 
+ * @returns 
+ */
+export function useState(initialState) {
+    hookStates[hookIndex] = hookStates[hookIndex] || initialState;
+    const currentIndex = hookIndex;
+    function setState(nextState) {
+        hookStates[currentIndex] = nextState;
+        scheduleUpdate();
+    };
+    return [hookStates[hookIndex++], setState]
 }
 
 export default {
