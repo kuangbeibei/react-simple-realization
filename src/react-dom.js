@@ -463,6 +463,18 @@ export function useCallback(callback, deps) {
     }
 }
 
+export function useReducer(reducer, initialState) {
+    hookStates[hookIndex] = hookStates[hookIndex] || initialState;
+    const currentIndex = hookIndex;
+
+    function dispatch(type) {
+        hookStates[currentIndex] = reducer(hookStates[currentIndex], type);
+        scheduleUpdate();
+    }
+
+    return [hookStates[hookIndex++], dispatch]
+}
+
 export default {
     render,
     createPortal: render
