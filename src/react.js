@@ -1,7 +1,7 @@
 import {REACT_ELEMENT, REACT_FORWARDREF, REACT_FRAGMENT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO} from "./constants";
 import {shallowEqual, toVdom} from "./utils"
 import { Component } from "./Component";
-import { useState } from "./react-dom";
+import { useState, useMemo, useCallback} from "./react-dom";
 
 /**
  * 
@@ -110,9 +110,11 @@ export default {
     PureComponent,
     memo,
     useState,
-   
+    useMemo,
+    useCallback
 }
 export {
     useState,
-
+    useMemo,
+    useCallback
 }

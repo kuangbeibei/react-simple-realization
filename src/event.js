@@ -1,6 +1,7 @@
 import { updateQueue } from "./Component";
 
 export function addEvent(dom, eventType, eventHandler) {
+    // debugger;
     let store = dom.__store__ ||( dom.__store__ = {});
     store[eventType] = eventHandler;
     if (!document[eventType]) {
@@ -39,13 +40,15 @@ function dispatchEvent(event) {
 
 function createSyntheticEvent(nativeEvent) {
     let syntheticEvent = {};
-    for (const [key, value] in Object.entries(nativeEvent)) {
+    for (let key in nativeEvent) {
+        const value = nativeEvent[key];
         if (typeof value === 'function') {
             syntheticEvent[key] = value.bind(nativeEvent);
         } else {
             syntheticEvent[key] = value;
         }
     }
+    
     syntheticEvent.nativeEvent = nativeEvent;
     syntheticEvent.isPropagationStopped = false;
     syntheticEvent.isDefaultPrevented = false;

@@ -1,22 +1,32 @@
-import React, {useState} from "./react";
+import React, {useState, useMemo, useCallback} from "./react";
 import ReactDom from "./react-dom";
 
-function Counter() {
-    const [number, setNumber] = useState(10);
-    const handleClick = () => {
-        setNumber(number + 10);
-    }
-    return <button onClick={handleClick}>counter number: {number}</button>
+function Counter(props) {
+    console.log('counter render');
+    return <button onClick={props.handleClick}>counter number: {props.number.count}</button>
 }
+
+const MemoCounter = React.memo(Counter);
+
 function App() {
-    const [state, setState] = React.useState(0);
-    const handleClick = () => {
-        setState(state + 1);
+    const [count, setCount] = useState(0);
+    const [name, setName] = useState('kk');
+    
+    const handlechange = (e) => {
+        console.log('e.target.value: ', e.target.value);
+        setName(e.target.value);
     }
+
+    const number = useMemo(() => ({count}), [count]);
+
+    const handleClick = useCallback(() => {
+        setCount(count + 1);
+    }, [count]);
+
     return <React.Fragment>
-        <div>{state}</div>
-        <button onClick={handleClick}>+</button>
-        <Counter />
+        <div>{count}</div>
+        <MemoCounter handleClick={handleClick} number={number}/>
+        <input value={name} onChange={handlechange} />
     </React.Fragment>
 }
 

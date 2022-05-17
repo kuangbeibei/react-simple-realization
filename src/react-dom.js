@@ -54,7 +54,6 @@ export function createDom(vdom) {
         // render html tags
         dom = document.createElement(type)
     }
-
     if (typeof props === 'object') {
         updateProps(dom, {}, props);
         if (props.children) {
@@ -426,6 +425,42 @@ export function useState(initialState) {
         scheduleUpdate();
     };
     return [hookStates[hookIndex++], setState]
+}
+
+export function useMemo(factory, deps) {
+    if (hookStates[hookIndex]) {
+        const [memoObj, oldDeps] = hookStates[hookIndex];
+        const same = deps.every((item, index) => item === oldDeps[index]);
+        if (same) {
+            hookIndex++;
+            return memoObj;
+        } else {
+            const newMemoObj = factory();
+            hookStates[hookIndex++] = [newMemoObj, deps];
+            return newMemoObj
+        }
+    } else {
+        const newMemoObj = factory();
+        hookStates[hookIndex++] = [newMemoObj, deps];
+        return newMemoObj
+    }
+}
+
+export function useCallback(callback, deps) {
+    if (hookStates[hookIndex]) {
+        const [oldCallback, oldDeps] = hookStates[hookIndex];
+        const same = deps.every((item, index) => item === oldDeps[index]);
+        if (same) {
+            hookIndex++;
+            return oldCallback;
+        } else {
+            hookStates[hookIndex++] = [callback, deps];
+            return callback
+        }
+    } else {
+        hookStates[hookIndex++] = [callback, deps];
+        return callback
+    }
 }
 
 export default {
