@@ -421,14 +421,13 @@ function unMountVdom(oldVdom) {
 export function useReducer(reducer, initialState) {
     hookStates[hookIndex] = hookStates[hookIndex] || initialState;
     const currentIndex = hookIndex;
-
-    function dispatch(type) {
+    function dispatch(action) {
+        const oldState = hookStates[currentIndex];
         if (reducer) {
-            hookStates[currentIndex] = reducer(hookStates[currentIndex], type);
+            hookStates[currentIndex] = reducer(oldState, action);
         } else {
-            hookStates[currentIndex] = type; // in the case of useState, type is the newState
+            hookStates[currentIndex] = typeof action === 'function' ? action(oldState) : action; // in the case of useState, type is the newState
         }
-       
         scheduleUpdate();
     }
 
@@ -498,6 +497,39 @@ export function useCallback(callback, deps) {
 
 export function useContext(context) {
     return context._currentValue
+}
+
+export function useEffect(factory, deps) {
+    // debugger;
+    const currentIndex = hookIndex;
+    if (hookStates[hookIndex]) {
+        const [destory, oldDeps] = hookStates[hookIndex];
+        const same = deps && deps.every((item, index) => item === oldDeps[index]);
+        if (same) {
+            hookIndex++
+        } else {
+            destory && destory();
+            setTimeout(() => {
+                const destroy = factory();
+                hookStates[currentIndex] = [destroy, deps];
+            }, 0);
+            hookIndex++
+        }
+    } else {
+        setTimeout(() => {
+            const destroy = factory();
+            hookStates[currentIndex] = [destroy, deps];
+        }, 0);
+        hookIndex++;
+    }
+}
+
+export function useRef() {
+
+}
+
+export function useImperativeHandle() {
+
 }
 
 export default {

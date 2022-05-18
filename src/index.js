@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback, useReducer, useContext} from "./react";
+import React, {useState, useMemo, useCallback, useReducer, useContext, useEffect} from "./react";
 import ReactDom from "./react-dom";
 
 /**
@@ -40,43 +40,67 @@ import ReactDom from "./react-dom";
  * useReducer
  * useContext
  */
-const ADD = 'ADD';
-const MINUS = 'MINUS';
+// const ADD = 'ADD';
+// const MINUS = 'MINUS';
 
-function reducer(state, action) {
-    switch (action.type) {
-        case ADD:
-            return {number: state.number + 1}
-        case MINUS:
-            return {number: state.number - 1};
-        default:
-            return state
-    }
+// function reducer(state, action) {
+//     switch (action.type) {
+//         case ADD:
+//             return {number: state.number + 1}
+//         case MINUS:
+//             return {number: state.number - 1};
+//         default:
+//             return state
+//     }
 
-}
+// }
 
-const MyContext = React.createContext();
+// const MyContext = React.createContext();
 
-function Counter() {
-    const {state, dispatch} = useContext(MyContext);
-    console.log(useContext(MyContext));
-    return <React.Fragment>
-        <div>{state.number}</div>
-        <button onClick={() => dispatch({type: ADD})}>+</button>
-        <button onClick={() => dispatch({type: MINUS})}>-</button>
-    </React.Fragment>
-}
+// function Counter() {
+//     const {state, dispatch} = useContext(MyContext);
+//     console.log(useContext(MyContext));
+//     return <React.Fragment>
+//         <div>{state.number}</div>
+//         <button onClick={() => dispatch({type: ADD})}>+</button>
+//         <button onClick={() => dispatch({type: MINUS})}>-</button>
+//     </React.Fragment>
+// }
+
+// function App() {
+//     const [val1, setVal1] = useState(10);
+//     const [state, dispatch] = useReducer(reducer, {number: 0});
+//     return <MyContext.Provider value={{state, dispatch}}>
+//         <div>
+//             <Counter />
+//             <div>{val1}</div>
+//             <button onClick={() => setVal1(val1 + 10)}>set val1</button>
+//         </div>
+//     </MyContext.Provider>
+// }
+
+// ReactDom.render(<App />, document.getElementById('root'));
+
+/**
+ * useEffect
+ */
 
 function App() {
-    const [val1, setVal1] = useState(10);
-    const [state, dispatch] = useReducer(reducer, {number: 0})
-    return <MyContext.Provider value={{state, dispatch}}>
-        <div>
-            <Counter />
-            <div>{val1}</div>
-            <button onClick={() => setVal1(val1 + 10)}>set val1</button>
-        </div>
-    </MyContext.Provider>
+    const [number, setNumber] = useState(0);
+    useEffect(() => {
+        console.log('init');
+        let timer = setInterval(() => {
+            setNumber(number => number + 1)
+        }, 1000);
+        return () => {
+            console.log('destroy');
+            clearInterval(timer);
+            timer = null;
+        }
+    }, [])
+    return <div>
+        {number}
+    </div>
 }
 
-ReactDom.render(<App />, document.getElementById('root'))
+ReactDom.render(<App />, document.getElementById('root'));
