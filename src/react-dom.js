@@ -496,6 +496,10 @@ export function useCallback(callback, deps) {
     }
 }
 
+export function useContext(context) {
+    return context._currentValue
+}
+
 export default {
     render,
     createPortal: render
