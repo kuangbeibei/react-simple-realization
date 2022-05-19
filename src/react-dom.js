@@ -525,11 +525,12 @@ export function useEffect(factory, deps) {
 }
 
 export function useRef() {
-
+    hookStates[hookIndex] = hookStates[hookIndex] || {current: null};
+    return hookStates[hookIndex++];
 }
 
-export function useImperativeHandle() {
-
+export function useImperativeHandle(ref, callback) {
+    ref.current = callback()
 }
 
 export default {

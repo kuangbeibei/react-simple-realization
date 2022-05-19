@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback, useReducer, useContext, useEffect} from "./react";
+import React, {useState, useMemo, useCallback, useReducer, useContext, useEffect, useRef, useImperativeHandle} from "./react";
 import ReactDom from "./react-dom";
 
 /**
@@ -85,22 +85,50 @@ import ReactDom from "./react-dom";
  * useEffect
  */
 
-function App() {
-    const [number, setNumber] = useState(0);
-    useEffect(() => {
-        console.log('init');
-        let timer = setInterval(() => {
-            setNumber(number => number + 1)
-        }, 1000);
-        return () => {
-            console.log('destroy');
-            clearInterval(timer);
-            timer = null;
+// function App() {
+//     const [number, setNumber] = useState(0);
+//     useEffect(() => {
+//         console.log('init');
+//         let timer = setInterval(() => {
+//             setNumber(number => number + 1)
+//         }, 1000);
+//         return () => {
+//             console.log('destroy');
+//             clearInterval(timer);
+//             timer = null;
+//         }
+//     }, [])
+//     return <div>
+//         {number}
+//     </div>
+// }
+
+// ReactDom.render(<App />, document.getElementById('root'));
+
+/**
+ * useRef
+ * useImperativeHandle
+ */
+function Input(props, ref) {
+    const myownInputRef = useRef()
+    useImperativeHandle(ref, () => ({
+        focus() {
+            myownInputRef.current.focus()
         }
-    }, [])
-    return <div>
-        {number}
-    </div>
+    }))
+    return <input ref={myownInputRef}/>
 }
 
+const ForwardInput = React.forwardRef(Input);
+
+function App() {
+    const inputRef = useRef();
+    const handleClickFocus = () => {
+        inputRef.current.focus()
+    }
+    return <div>
+        <ForwardInput ref={inputRef}/>
+        <button onClick={handleClickFocus}>focus</button>
+    </div>
+}
 ReactDom.render(<App />, document.getElementById('root'));
